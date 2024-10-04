@@ -234,3 +234,13 @@ def change_ip_desc(nb, cidr: str, description: str) -> bool:
         return False
 
 
+def get_contacts_all(nb):
+    """get all contacts"""
+    try:
+        contacts = nb.tenancy.contacts.all()
+        for contact in contacts:
+            print(f"{contact.name}, {contact.title}, {contact.tags}")
+        return True
+    except Exception as e:
+        print(f"Exception: {e}")
+        return False
