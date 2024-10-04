@@ -196,3 +196,41 @@ def delete_netbox_device(nb, device_name: str):
     else:
         print(f"device name {device_name} not found")
 
+def get_ip_status(nb, cidr: str) -> str:
+    """
+    get the status for a netbox ip_address using the cidr
+    """
+    try:
+        response = nb.ipam.ip_addresses.get(address=cidr)
+        return response.status
+    except Exception as e:
+        print(f"Exception: {e}")
+        return "Unknown"
+
+
+def change_ip_status(nb, cidr: str, status: str) -> bool:
+    """change the status for a netbox ip_address"""
+    try:
+        response = nb.ipam.ip_addresses.get(address=cidr)
+        print(f"change the status for {cidr}")
+        print(dir(response))
+        response.status = status.lower()
+        response.save()
+        return True
+    except Exception as e:
+        print(f"Exception: {e}")
+        return False
+
+
+def change_ip_desc(nb, cidr: str, description: str) -> bool:
+    """change a netbox ip_address description"""
+    try:
+        response = nb.ipam.ip_addresses.get(address=cidr)
+        response.description = description
+        response.save()
+        return True
+    except Exception as e:
+        print(f"Exception: {e}")
+        return False
+
+
