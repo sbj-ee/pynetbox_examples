@@ -23,26 +23,29 @@ nm_cidr_dict = {
 }
 
 def get_pynetbox_version(nb) -> str:
+    """get the netbox version"""
     return str(nb.status()["netbox-version"])
 
 
 def show_pynetbox_version(nb) -> None:
+    """display the netbox version"""
     print(get_pynetbox_version(nb))
 
 
-# this will stall for some reason - I suspect the firewall interfering with the data transfer
-def show_all_netbox_devices(nb):
+def show_all_netbox_devices(nb) -> None:
+    """show all devices in netbox"""
     devices = nb.dcim.devices.all()
     for device in devices:
         print(f"{str(device.id):<6} {str(device):<30}  {str(device.primary_ip):<20}  {str(device.device_role)}")
 
 
 def get_netbox_device_count(nb):
+    """get the count of the number of devices in netbox"""
     return nb.dcim.devices.count()
 
 
 def check_if_cidr_exists(nb, cidr: str) -> bool:
-    """Given a CIDR, check to see if that CIDR is in netbox"""
+    """given a CIDR, check to see if that CIDR is in netbox"""
     result = False
     try:
         result = nb.ipam.ip_addresses.get(address=cidr)
@@ -56,7 +59,7 @@ def check_if_cidr_exists(nb, cidr: str) -> bool:
 
 
 def check_if_ip_exists(nb, ip: str) -> bool:
-    """Given just an IP, look for any CIDR which exists in netbox using that IP"""
+    """given just an IP, look for any CIDR which exists in netbox using that IP"""
     rv = False
     for slash in nm_cidr_dict:
         cidr = f"{ip}{slash}"
@@ -70,16 +73,19 @@ def check_if_ip_exists(nb, ip: str) -> bool:
 
 
 def get_all_ip_prefixes(nb) -> dict:
+    """get all of the ip prefixes"""
     return dict(nb.ipam.prefixes.all())
 
 
 def show_all_ip_prefixes(nb) -> None:
+    """show all of the ip prefixes"""
     prefixes = nb.ipam.prefixes.all()
     for pf in prefixes:
         print(pf)
 
 
 def check_if_device_name_exists(nb, device_name: str) -> bool:
+    """check if a device name exists in netbox"""
     try:
         device_name = nb.dcim.devices.get(name=device_name)
         print(f"device_name = {device_name}")
@@ -92,7 +98,7 @@ def check_if_device_name_exists(nb, device_name: str) -> bool:
 
 
 def get_ip_device_info(nb, ip) -> bool:
-    """Using just the IP, map to the device"""
+    """using just the IP, map to the device"""
     try:
         result = nb.ipam.ip_addresses.get(address=ip)
         if result:
@@ -151,7 +157,7 @@ def get_site_id(nb, site: str) -> int:
         print(e.error)
 
 
-def get_device_type_id(nb, device_type: str):
+def get_device_type_id(nb, device_type: str) -> int:
     """retrieve a specific device type id"""
     try:
         ndev_type: int = nb.dcim.device_types.get(model=device_type)
@@ -159,9 +165,10 @@ def get_device_type_id(nb, device_type: str):
             return ndev_type.id
     except pynetbox.RequestError as e:
         print(e.error)
+        return 0
 
 
-def get_device_role_id(nb, device_role: str):
+def get_device_role_id(nb, device_role: str) -> int:
     """retrieve a specific device role id"""
     try:
         ndev_role: int = nb.dcim.device_roles.get(name=device_role)
@@ -169,10 +176,11 @@ def get_device_role_id(nb, device_role: str):
             return ndev_role.id
     except pynetbox.RequestError as e:
         print(e.error)
+        return 0
 
 
 def create_netbox_device(nb, device_name: str, site: str, device_type: str, device_role:str) -> str:
-    """add a device into Netbox"""
+    """add a device into netbox"""
     try:
         result = nb.dcim.devices.create(
             name=device_name,
@@ -183,18 +191,23 @@ def create_netbox_device(nb, device_name: str, site: str, device_type: str, devi
         return result
     except pynetbox.RequestError as e:
         print(e.error)
+        return str(e.error)
 
 
-def delete_netbox_device(nb, device_name: str):
+def delete_netbox_device(nb, device_name: str) -> bool:
     """
     delete a netbox device
-    Note: the device must be in the status 'decommissioning' to be deleted
+    note: the device must be in the status 'decommissioning' to be deleted
+    *this is an optional setting
     """
     ndev_device= nb.dcim.devices.get(name=device_name)
     if ndev_device is not None:
         ndev_device.delete()
+        return True
     else:
         print(f"device name {device_name} not found")
+        return False
+
 
 def get_ip_status(nb, cidr: str) -> str:
     """
@@ -234,7 +247,7 @@ def change_ip_desc(nb, cidr: str, description: str) -> bool:
         return False
 
 
-def get_contacts_all(nb):
+def get_contacts_all(nb) -> bool:
     """get all contacts"""
     try:
         contacts = nb.tenancy.contacts.all()
