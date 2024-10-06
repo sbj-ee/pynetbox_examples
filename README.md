@@ -7,4 +7,4 @@ I'll try to add more examples as I proceed figuring out the different APIs and t
 
 `netboxlib.py` is the primary code that I'm working on for generic usage.  All the other python files are either testing or being used to determine the pynetbox/netbox usage for something.
 
-`ip_info.py` is where I'm trying out the ipaddress module and I'll be making use of it for some of the netboxlib in the near future.
+`ip_info.py` is where I'm trying out the `ipaddress` module and I'll be making use of it for some of the netboxlib in the near future.
