@@ -5,3 +5,4 @@ I beat my head against the wall today attempting to change the `Status` for IP a
 
 I'll try to add more examples as I proceed figuring out the different APIs and their nuances.
 
+`netboxlib.py` is the primary code that I'm working on for generic usage.  All the other python files are either testing or being used to determine the pynetbox/netbox usage for something.
