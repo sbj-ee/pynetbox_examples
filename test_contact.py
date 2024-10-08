@@ -24,7 +24,10 @@ def test_add_contact() -> None:
 
     rv = nb.tenancy.contacts.create(name=contact_name)
 
-    print(f"rv = {rv}")
+    if rv:
+        assert True
+    else:
+        assert False
 
 
 def test_delete_contact():
@@ -49,7 +52,11 @@ def test_delete_contact():
     print(f"contact name = {contact_ref.name}")
 
     rv = nb.tenancy.contacts.delete([contact_ref])
-    print(f"rv = {rv}")
+    
+    if rv:
+        assert True
+    else:
+        assert False
 
 
 if __name__ == "__main__":
