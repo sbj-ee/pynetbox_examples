@@ -150,33 +150,34 @@ def get_ip_device_info(nb, ip) -> bool:
 def get_site_id(nb, site: str) -> int:
     """retrieve a specific site id"""
     try:
-        ndev_site: int = nb.dcim.sites.get(name=site)
+        ndev_site = nb.dcim.sites.get(name=site)
         if ndev_site is not None:
-            return ndev_site.id
+            return int(ndev_site.id)
     except pynetbox.RequestError as e:
         print(e.error)
+        return -1
 
 
 def get_device_type_id(nb, device_type: str) -> int:
     """retrieve a specific device type id"""
     try:
-        ndev_type: int = nb.dcim.device_types.get(model=device_type)
+        ndev_type = nb.dcim.device_types.get(model=device_type)
         if ndev_type is not None:
-            return ndev_type.id
+            return int(ndev_type.id)
     except pynetbox.RequestError as e:
         print(e.error)
-        return 0
+        return -1
 
 
 def get_device_role_id(nb, device_role: str) -> int:
     """retrieve a specific device role id"""
     try:
-        ndev_role: int = nb.dcim.device_roles.get(name=device_role)
+        ndev_role = nb.dcim.device_roles.get(name=device_role)
         if ndev_role is not None:
-            return ndev_role.id
+            return int(ndev_role.id)
     except pynetbox.RequestError as e:
         print(e.error)
-        return 0
+        return -1
 
 
 def create_netbox_device(nb, device_name: str, site: str, device_type: str, device_role:str) -> str:
@@ -200,7 +201,7 @@ def delete_netbox_device(nb, device_name: str) -> bool:
     note: the device must be in the status 'decommissioning' to be deleted
     *this is an optional setting
     """
-    ndev_device= nb.dcim.devices.get(name=device_name)
+    ndev_device = nb.dcim.devices.get(name=device_name)
     if ndev_device is not None:
         ndev_device.delete()
         return True
@@ -257,3 +258,18 @@ def get_contacts_all(nb) -> bool:
     except Exception as e:
         print(f"Exception: {e}")
         return False
+
+
+def add_contact():
+    ...
+
+
+def modify_contact():
+    ...
+
+
+def delete_contact():
+    ...
+
+def show_all_contacts():
+    ...
