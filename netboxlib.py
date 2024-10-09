@@ -260,16 +260,27 @@ def get_contacts_all(nb) -> bool:
         return False
 
 
-def add_contact():
-    ...
+def add_contact(nb, contact_name: str) -> bool:
+    """add a netbox contact"""
+    try:
+        rv = nb.tenancy.contacts.create(name=contact_name)
+        return True
+    except Exception as e:
+        print(f"exception: {e}")
+        return False
+
 
 
 def modify_contact():
+    """modify a netbox contact"""
     ...
 
 
 def delete_contact():
+    """delete a netbox contact"""
     ...
 
+
 def show_all_contacts():
+    """show all netbox contacts"""
     ...
