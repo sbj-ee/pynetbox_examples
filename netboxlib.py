@@ -120,6 +120,7 @@ def delete_ip_prefix(nb, prefix) -> bool:
         if prefix_to_delete is not None:
             prefix_to_delete.delete()
             return True
+        raise "not found"
     except Exception as e:
         print(e)
         return False

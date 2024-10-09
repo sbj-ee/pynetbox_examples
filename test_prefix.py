@@ -20,9 +20,12 @@ def test_add_ip_prefix():
 def test_delete_ip_prefix():
     # FIX - this is not deleting
     nb = connect_netbox()
-    prefix_dict = {"prefix": "192.168.7.0/24"}
-    delete_ip_prefix(nb, prefix=prefix_dict)
-    assert False
+    prefix = "192.168.7.0/24"
+    rv = delete_ip_prefix(nb, prefix)
+    if rv:
+        assert True
+    else:
+        assert False
 
 
 def test_get_all_ip_prefixes():
