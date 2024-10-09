@@ -8,7 +8,7 @@ urllib3.disable_warnings()
 
 
 def test_add_contact() -> None:
-    config = dotenv_values(".env.netbox.sbj.dev")
+    config = dotenv_values("netbox.env")
 
     try:
         token = config['token']
@@ -31,7 +31,7 @@ def test_add_contact() -> None:
 
 
 def test_modify_contact():
-    config = dotenv_values(".env.netbox.sbj.dev")
+    config = dotenv_values("netbox.env")
 
     try:
         token = config['token']
@@ -51,7 +51,7 @@ def test_modify_contact():
 
 
 def test_delete_contact():
-    config = dotenv_values(".env.netbox.sbj.dev")
+    config = dotenv_values("netbox.env")
 
     try:
         token = config['token']
