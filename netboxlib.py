@@ -1,5 +1,7 @@
 import pynetbox
 from pprint import pprint
+import sys
+from dotenv import dotenv_values
 
 
 nm_cidr_dict = {
@@ -21,6 +23,22 @@ nm_cidr_dict = {
     "255.255.128.0", "/17",
     "255.255.0.0", "/16"
 }
+
+
+def connect_netbox():
+    config = dotenv_values("netbox.env")
+
+    try:
+        token = config['token']
+        url = config['url']
+    except KeyError:
+        print("key missing from env file")
+        sys.exit()
+
+    nb = pynetbox.api(url=url, token=token)
+    nb.http_session.verify = False
+    return nb
+
 
 def get_pynetbox_version(nb) -> str:
     """get the netbox version"""
@@ -72,9 +90,9 @@ def check_if_ip_exists(nb, ip: str) -> bool:
     return rv
 
 
-def get_all_ip_prefixes(nb) -> dict:
+def get_all_ip_prefixes(nb):
     """get all of the ip prefixes"""
-    return dict(nb.ipam.prefixes.all())
+    return nb.ipam.prefixes.all()
 
 
 def show_all_ip_prefixes(nb) -> None:
@@ -82,6 +100,27 @@ def show_all_ip_prefixes(nb) -> None:
     prefixes = nb.ipam.prefixes.all()
     for pf in prefixes:
         print(pf)
+
+
+def add_ip_prefix(nb, prefix) -> bool:
+    """add a netbox prefix"""
+    # ensure the prefix doesn't exist
+    prefixes = get_all_ip_prefixes(nb)
+    if prefix in prefixes:
+        return False
+    else:
+        nb.ipam.prefixes.create(prefix)
+        return True
+
+
+def delete_ip_prefix(nb, prefix) -> bool:
+    """delete a netbox prefix"""
+    # FIX - this is not working
+    try:
+        nb.ipam.prefix.delete(nb, prefix=prefix)
+        return True
+    except Exception as e:
+        return False
 
 
 def check_if_device_name_exists(nb, device_name: str) -> bool:
@@ -248,13 +287,11 @@ def change_ip_desc(nb, cidr: str, description: str) -> bool:
         return False
 
 
-def get_contacts_all(nb) -> bool:
+def get_contacts_all(nb):
     """get all contacts"""
     try:
         contacts = nb.tenancy.contacts.all()
-        for contact in contacts:
-            print(f"{contact.name}, {contact.title}, {contact.tags}")
-        return True
+        return contacts
     except Exception as e:
         print(f"Exception: {e}")
         return False
@@ -263,7 +300,7 @@ def get_contacts_all(nb) -> bool:
 def add_contact(nb, contact_name: str) -> bool:
     """add a netbox contact"""
     try:
-        rv = nb.tenancy.contacts.create(name=contact_name)
+        nb.tenancy.contacts.create(name=contact_name)
         return True
     except Exception as e:
         print(f"exception: {e}")
@@ -271,16 +308,25 @@ def add_contact(nb, contact_name: str) -> bool:
 
 
 
-def modify_contact():
+def modify_contact() -> bool:
     """modify a netbox contact"""
     ...
+    # need to deal with case of more than one record
 
 
-def delete_contact():
+def delete_contact(nb, contact_name: str) -> bool:
     """delete a netbox contact"""
     ...
+    # need to deal with case of more than one record
 
 
-def show_all_contacts():
+def show_all_contacts(nb) -> bool:
     """show all netbox contacts"""
-    ...
+    try:
+        contacts = get_contacts_all(nb)
+        for contact in contacts:
+            print(f"{contact.name}, {contact.title}, {contact.tags}")
+        return True
+    except Exception as e:
+        print(f"Exception: {e}")
+        return False
