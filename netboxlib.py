@@ -115,11 +115,13 @@ def add_ip_prefix(nb, prefix) -> bool:
 
 def delete_ip_prefix(nb, prefix) -> bool:
     """delete a netbox prefix"""
-    # FIX - this is not working
     try:
-        nb.ipam.prefix.delete(nb, prefix=prefix)
-        return True
+        prefix_to_delete = nb.ipam.prefixes.get(prefix=prefix)
+        if prefix_to_delete is not None:
+            prefix_to_delete.delete()
+            return True
     except Exception as e:
+        print(e)
         return False
 
 
