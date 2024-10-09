@@ -1,0 +1,5 @@
+netbox.env
+__pycache__/netboxlib.cpython-312.pyc
+__pycache__/test_contact.cpython-312-pytest-8.3.3.pyc
+__pycache__/test_ip_add.cpython-312-pytest-8.3.3.pyc
+__pycache__/test_prefix.cpython-312-pytest-8.3.3.pyc
