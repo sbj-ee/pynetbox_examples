@@ -349,3 +349,38 @@ def show_all_contacts(nb) -> bool:
     except Exception as e:
         print(f"Exception: {e}")
         return False
+
+    
+
+def check_asn_exists(nb, asn: int) -> bool:
+    """check if an ASN exists in netbox"""
+    rv = nb.ipam.asns.get(asn=asn)
+    if rv:
+        return True
+    else:
+        return False
+
+
+def add_asn(nb, asn: int, desc: str) -> bool:
+    """Add an ASN for RIR=1 ARIN"""
+    rv = nb.ipam.asns.create(asn=asn, rir=1, description=desc)
+    if rv:
+        return True
+    else:
+        return False
+
+
+def delete_asn(nb, asn) -> bool:
+    """Delete an ASN"""
+    asn_ref = nb.ipam.asns.get(asn=asn)
+    rv = nb.ipam.asns.delete([asn_ref])
+    
+    if rv:
+        return True
+    else:
+        return False
+
+
+def get_bgp_community_desc(nb, community: str) -> str:
+    rv = nb.plugins.bgp.community.get(value=community)
+    return (rv['description'])
