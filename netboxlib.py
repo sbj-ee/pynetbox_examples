@@ -3,7 +3,6 @@ from pprint import pprint
 import sys
 from dotenv import dotenv_values
 
-
 nm_cidr_dict = {
     "255.255.255.255", "/32",
     "255.255.255.254", "/31",
@@ -349,7 +348,6 @@ def show_all_contacts(nb) -> bool:
     except Exception as e:
         print(f"Exception: {e}")
         return False
-
     
 
 def check_asn_exists(nb, asn: int) -> bool:
@@ -382,5 +380,30 @@ def delete_asn(nb, asn) -> bool:
 
 
 def get_bgp_community_desc(nb, community: str) -> str:
-    rv = nb.plugins.bgp.community.get(value=community)
-    return (rv['description'])
+    """Get the description for a specific BGP Community from Netbox"""
+    try:
+        rv = nb.plugins.bgp.community.get(value=community)
+        return (rv['description'])
+    except Exception as e:
+        print(f"Exception getting {community} from Netbox")
+        return ""
+
+
+def get_all_bgp_communities(nb) -> dict:
+    """Get all the BGP Communities from Netbox and return them as a dict"""
+    bgp_community_dict = dict()
+    try:
+        communities = nb.plugins.bgp.community.all()
+        for community in communities:
+            bgp_community_dict[community] = community.description
+        return (bgp_community_dict)
+    except Exception as e:
+        print(f"Exception getting communities from Netbox: {e}")
+
+
+def add_bgp_community(nb, community: str, description: str) -> None:
+    """Add a BGP Community"""
+    try:
+        nb.plugins.bgp.community.create(value=community, description=description)
+    except Exception as e:
+        print(f"Exception adding BGP Community: {e}")
