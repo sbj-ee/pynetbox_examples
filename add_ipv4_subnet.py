@@ -17,8 +17,14 @@ urllib3.disable_warnings()
 
 def main(cidr: str):
     """main code for adding the subnet"""
-    nm: str = cidr.split('/')[1]
-    ifc: IPv4Interface = IPv4Interface(cidr)
+
+    try:
+        ifc: IPv4Interface = IPv4Interface(cidr)
+        nm: str = cidr.split('/', maxsplit=1)[1]
+    except Exception as e:
+        logger.info(f"invalid cidr: {cidr}")
+        sys.exit()
+
     net: IPv4Network = IPv4Network(ifc.network)
 
     # add the subnet and broadcast
