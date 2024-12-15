@@ -22,7 +22,7 @@ def main(cidr: str):
         ifc: IPv4Interface = IPv4Interface(cidr)
         nm: str = cidr.split('/', maxsplit=1)[1]
     except Exception as e:
-        logger.info(f"invalid cidr: {cidr}")
+        logger.info(f"invalid cidr: {cidr} {e}")
         sys.exit()
 
     net: IPv4Network = IPv4Network(ifc.network)
