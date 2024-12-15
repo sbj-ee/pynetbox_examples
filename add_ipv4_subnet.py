@@ -5,17 +5,18 @@ It will mark the network and broadcast addresses as Reserved
 
 import sys
 import argparse
+from ipaddress import ip_network
+from ipaddress import IPv4Interface, IPv4Network
+import urllib3
 from dotenv import dotenv_values
 from loguru import logger
 import pynetbox
 from netboxlib import add_ipv4_ip
-from ipaddress import ip_network
-from ipaddress import IPv4Interface, IPv4Network
-import urllib3
 
 urllib3.disable_warnings()
 
 def main(cidr: str):
+    """main code for adding the subnet"""
     nm: str = cidr.split('/')[1]
     ifc: IPv4Interface = IPv4Interface(cidr)
     net: IPv4Network = IPv4Network(ifc.network)
@@ -32,15 +33,15 @@ def main(cidr: str):
     # add all the host ip addresses
     try:
         subnet_host_list: list = list(ip_network(ifc.network).hosts())
-        logger.info(f"adding all hosts")
+        logger.info("adding all hosts")
         for host in subnet_host_list:
-            ip = str(host).split('/')[0]
+            ip = str(host).split('/', maxsplit=1)[0]
             ip_addr: str = f"{ip}/{nm}"
             logger.info(f"adding host: {ip_addr}")
             rv = add_ipv4_ip(nb, ip_addr)
             logger.info(f"result: {rv}")
     except Exception as e:
-        logger.debug(f"Execption {e}")
+        logger.debug(f"Exception {e}")
 
     logger.info("Completed")
 
