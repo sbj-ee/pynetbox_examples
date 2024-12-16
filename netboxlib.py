@@ -1,7 +1,9 @@
+import sys
 import pynetbox
 from ipaddress import IPv4Network
 from ipaddress import IPv4Interface
 from pprint import pprint
+from dotenv import dotenv_values
 
 
 nm_cidr_dict = {
@@ -21,8 +23,39 @@ nm_cidr_dict = {
     "255.255.224.0", "/19",
     "255.255.192.0", "/18",
     "255.255.128.0", "/17",
-    "255.255.0.0", "/16"
+    "255.255.0.0", "/16",
+    "255.254.0.0", "/15",
+    "255.252.0.0", "/14",
+    "255.248.0.0", "/13",
+    "255.240.0.0", "/12",
+    "255.224.0.0", "/11",
+    "255.192.0.0", "/10",
+    "255.128.0.0", "/9",
+    "255.0.0.0", "/8",
+    "254.0.0.0", "/7",
+    "252.0.0.0", "/6",
+    "248.0.0.0", "/5",
+    "240.0.0.0", "/4",
+    "224.0.0.0", "/3",
+    "192.0.0.0", "/2",
+    "128.0.0.0", "/1",
+    "0.0.0.0", "/0"
 }
+
+
+def connect_netbox():
+    config = dotenv_values("netbox.env")
+
+    try:
+        token = config['token']
+        url = config['url']
+    except KeyError:
+        print("key missing from env file")
+        sys.exit()
+
+    nb = pynetbox.api(url=url, token=token)
+    nb.http_session.verify = False
+    return nb
 
 
 def get_pynetbox_version(nb) -> str:
@@ -54,7 +87,7 @@ def check_if_cidr_exists(nb, cidr: str) -> bool:
         result = nb.ipam.ip_addresses.get(address=cidr)
     except pynetbox.RequestError as e:
         print(e.error)
-    
+
     if result:
         return True
     else:
@@ -75,16 +108,40 @@ def check_if_ip_exists(nb, ip: str) -> bool:
     return rv
 
 
-def get_all_ip_prefixes(nb) -> dict:
-    """get all the ip prefixes"""
-    return dict(nb.ipam.prefixes.all())
+def get_all_ip_prefixes(nb):
+    """get all of the ip prefixes"""
+    return nb.ipam.prefixes.all()
 
 
 def show_all_ip_prefixes(nb) -> None:
-    """show all the ip prefixes"""
+    """show all of the ip prefixes"""
     prefixes = nb.ipam.prefixes.all()
     for pf in prefixes:
         print(pf)
+
+
+def add_ip_prefix(nb, prefix) -> bool:
+    """add a netbox prefix"""
+    # ensure the prefix doesn't exist
+    prefixes = get_all_ip_prefixes(nb)
+    if prefix in prefixes:
+        return False
+    else:
+        nb.ipam.prefixes.create(prefix)
+        return True
+
+
+def delete_ip_prefix(nb, prefix) -> bool:
+    """delete a netbox prefix"""
+    try:
+        prefix_to_delete = nb.ipam.prefixes.get(prefix=prefix)
+        if prefix_to_delete is not None:
+            prefix_to_delete.delete()
+            return True
+        raise "not found"
+    except Exception as e:
+        print(e)
+        return False
 
 
 def check_if_device_name_exists(nb, device_name: str) -> bool:
@@ -96,9 +153,9 @@ def check_if_device_name_exists(nb, device_name: str) -> bool:
             return True
         else:
             raise "Device not found exception"
-    except Exception as e:
-        print(f"Exception {e}")
+    except:
         return False
+
 
 def get_ip_device_info(nb, ip) -> bool:
     """using just the IP, map to the device"""
@@ -139,7 +196,7 @@ def get_ip_device_info(nb, ip) -> bool:
                 print(f"assigned object.device.url: {result.assigned_object.device.url}")
             if result.assigned_object.device.display:
                 print(f"assigned object.device.display: {result.assigned_object.device.display}")
-            
+
             # get the device using result.object.device.id
             device = nb.dcim.devices.get(result.assigned_object.device.id)
             pprint(dict(device), indent=4)
@@ -204,7 +261,7 @@ def delete_netbox_device(nb, device_name: str) -> bool:
     note: the device must be in the status 'decommissioning' to be deleted
     *this is an optional setting
     """
-    ndev_device= nb.dcim.devices.get(name=device_name)
+    ndev_device = nb.dcim.devices.get(name=device_name)
     if ndev_device is not None:
         ndev_device.delete()
         return True
@@ -229,8 +286,6 @@ def change_ip_status(nb, cidr: str, status: str) -> bool:
     """change the status for a netbox ip_address"""
     try:
         response = nb.ipam.ip_addresses.get(address=cidr)
-        # print(f"change the status for {cidr}")
-        # print(dir(response))
         response.status = status.lower()
         response.save()
         return True
@@ -251,16 +306,109 @@ def change_ip_desc(nb, cidr: str, description: str) -> bool:
         return False
 
 
-def get_contacts_all(nb) -> bool:
+def get_contacts_all(nb):
     """get all contacts"""
     try:
         contacts = nb.tenancy.contacts.all()
+        return contacts
+    except Exception as e:
+        print(f"Exception: {e}")
+        return False
+
+
+def add_contact(nb, contact_name: str) -> bool:
+    """add a netbox contact"""
+    try:
+        nb.tenancy.contacts.create(name=contact_name)
+        return True
+    except Exception as e:
+        print(f"exception: {e}")
+        return False
+
+
+
+def modify_contact() -> bool:
+    """modify a netbox contact"""
+    ...
+    # need to deal with case of more than one record
+
+
+def delete_contact(nb, contact_name: str) -> bool:
+    """delete a netbox contact"""
+    ...
+    # need to deal with case of more than one record
+
+
+def show_all_contacts(nb) -> bool:
+    """show all netbox contacts"""
+    try:
+        contacts = get_contacts_all(nb)
         for contact in contacts:
             print(f"{contact.name}, {contact.title}, {contact.tags}")
         return True
     except Exception as e:
         print(f"Exception: {e}")
         return False
+
+
+def check_asn_exists(nb, asn: int) -> bool:
+    """check if an ASN exists in netbox"""
+    rv = nb.ipam.asns.get(asn=asn)
+    if rv:
+        return True
+    else:
+        return False
+
+
+def add_asn(nb, asn: int, desc: str) -> bool:
+    """Add an ASN for RIR=1 ARIN"""
+    rv = nb.ipam.asns.create(asn=asn, rir=1, description=desc)
+    if rv:
+        return True
+    else:
+        return False
+
+
+def delete_asn(nb, asn) -> bool:
+    """Delete an ASN"""
+    asn_ref = nb.ipam.asns.get(asn=asn)
+    rv = nb.ipam.asns.delete([asn_ref])
+
+    if rv:
+        return True
+    else:
+        return False
+
+
+def get_bgp_community_desc(nb, community: str) -> str:
+    """Get the description for a specific BGP Community from Netbox"""
+    try:
+        rv = nb.plugins.bgp.community.get(value=community)
+        return (rv['description'])
+    except Exception as e:
+        print(f"Exception getting {community} from Netbox")
+        return ""
+
+
+def get_all_bgp_communities(nb) -> dict:
+    """Get all the BGP Communities from Netbox and return them as a dict"""
+    bgp_community_dict = dict()
+    try:
+        communities = nb.plugins.bgp.community.all()
+        for community in communities:
+            bgp_community_dict[community] = community.description
+        return (bgp_community_dict)
+    except Exception as e:
+        print(f"Exception getting communities from Netbox: {e}")
+
+
+def add_bgp_community(nb, community: str, description: str) -> None:
+    """Add a BGP Community"""
+    try:
+        nb.plugins.bgp.community.create(value=community, description=description)
+    except Exception as e:
+        print(f"Exception adding BGP Community: {e}")
+
 
 def add_ipv4_ip(nb, cidr: str) -> str:
     """add an ipv4 IP into netbox"""
