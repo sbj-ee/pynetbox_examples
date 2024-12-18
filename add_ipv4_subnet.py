@@ -26,7 +26,7 @@ def main(cidr: str):
         sys.exit()
 
     if int(nm) <= 22:
-        proceed: str = input(f"A large subnet - Are you sure? Y or N")
+        proceed: str = input(f"A large subnet - Are you sure? Y or N: ")
         if proceed.lower() != 'y':
             logger.info("Exiting - proceed check was {proceed}")
             sys.exit()
