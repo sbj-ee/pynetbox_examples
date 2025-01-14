@@ -3,6 +3,7 @@ import pynetbox
 # establish your netbox connection
 #
 
+# assuming you have a connection, the following are the raw steps
 rir = nb.ipam.rirs.get("rir="ARIN")
 
 local_as = nb.ipam.asns.get(asn=4181)
