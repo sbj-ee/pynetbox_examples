@@ -22,6 +22,8 @@ def check_bgp_session_exists(nb, bgp_session_object: BgpSession) -> bool:
 
     sessions = nb.plugins.bgp.session.all()
     exists_flag: bool = False
+
+    # ugly - but the only reliable way that I've found so far
     for session in sessions:
         print(f"{session.remote_address}")
         print(f"{bgp_session_object.remote_addr}")
