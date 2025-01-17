@@ -2,6 +2,7 @@ import sys
 import pynetbox
 from ipaddress import IPv4Network
 from ipaddress import IPv4Interface
+from ipaddress import ip_address, IPv4Address
 from pprint import pprint
 from dotenv import dotenv_values
 
@@ -97,7 +98,11 @@ def check_if_cidr_exists(nb, cidr: str) -> bool:
 def check_if_ip_exists(nb, ip: str) -> bool:
     """given just an IP, look for any CIDR which exists in netbox using that IP"""
     rv = False
-    for slash in nm_cidr_dict:
+    max_bitrange = 128
+    ip_type = ip_address(ip)
+    if isinstance(ip_type, IPv4Address):
+        max_bitrange = 32
+    for slash in range(max_bitrange, 0, -1):
         cidr = f"{ip}{slash}"
         result = nb.ipam.ip_addresses.get(address=cidr)
         if result:
@@ -106,6 +111,20 @@ def check_if_ip_exists(nb, ip: str) -> bool:
     if rv is False:
         print(f"IP: {ip} was not found in netbox")
     return rv
+
+
+def get_cidr_from_ip(nb, ip: str) -> str:
+    """given an IP, return the CIDR if it exists in netbox"""
+    max_bitrange = 128
+    ip_type = ip_address(ip)
+    if isinstance(ip_type, IPv4Address):
+        max_bitrange = 32
+    for slash in range(max_bitrange, 0, -1):
+        cidr = f"{ip}/{slash}"
+        result = nb.ipam.ip_addresses.get(address=cidr)
+
+        if result:
+            return cidr
 
 
 def get_all_ip_prefixes(nb):
