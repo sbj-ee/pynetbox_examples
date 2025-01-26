@@ -4,6 +4,7 @@ import sys
 from pprint import pprint
 from time import sleep
 import urllib3
+
 urllib3.disable_warnings()
 
 
@@ -11,8 +12,8 @@ def test_add_contact() -> None:
     config = dotenv_values("netbox.env")
 
     try:
-        token = config['token']
-        url = config['url']
+        token = config["token"]
+        url = config["url"]
     except KeyError:
         print("key missing from env file")
         sys.exit()
@@ -34,8 +35,8 @@ def test_modify_contact():
     config = dotenv_values("netbox.env")
 
     try:
-        token = config['token']
-        url = config['url']
+        token = config["token"]
+        url = config["url"]
     except KeyError:
         print("key missing from env file")
         sys.exit()
@@ -54,8 +55,8 @@ def test_delete_contact():
     config = dotenv_values("netbox.env")
 
     try:
-        token = config['token']
-        url = config['url']
+        token = config["token"]
+        url = config["url"]
     except KeyError:
         print("key missing from env file")
         sys.exit()
@@ -67,7 +68,7 @@ def test_delete_contact():
 
     contact_ref = nb.tenancy.contacts.get(name=contact_name)
     rv = nb.tenancy.contacts.delete([contact_ref])
-    
+
     if rv:
         assert True
     else:

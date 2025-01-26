@@ -9,7 +9,7 @@ def ip_info(cidr: str) -> None:
     """Provide information about the IP address"""
 
     print(f"CIDR    {cidr}")
-    ip = cidr.split('/')[0]
+    ip = cidr.split("/")[0]
     if ipaddress.ip_address(ip).version == 4:
         print(f"cidr = {cidr}")
         net = ipaddress.ip_network(cidr).netmask
@@ -46,8 +46,8 @@ def ip_info(cidr: str) -> None:
 
 
 if __name__ == "__main__":
-    ip6 = '2001:db8::1/127'
+    ip6 = "2001:db8::1/127"
     ip_info(ip6)
     print("----")
-    ip4 = '10.10.10.10/31'
+    ip4 = "10.10.10.10/31"
     ip_info(ip4)

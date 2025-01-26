@@ -2,14 +2,15 @@ from dotenv import dotenv_values
 import pynetbox
 import sys
 import urllib3
+
 urllib3.disable_warnings()
 
 
 def nb_get_ip_status(cidr: str) -> str:
     config = dotenv_values("netbox.env")
     try:
-        token = config['token']
-        url = config['url']
+        token = config["token"]
+        url = config["url"]
     except KeyError as e:
         print(f"key missing from env file: {e}")
         sys.exit()

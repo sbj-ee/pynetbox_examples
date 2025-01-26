@@ -4,6 +4,7 @@ import sys
 from pprint import pprint
 from time import sleep
 import urllib3
+
 urllib3.disable_warnings()
 from netboxlib import connect_netbox, add_ip_prefix, get_all_ip_prefixes
 from netboxlib import show_all_ip_prefixes, delete_ip_prefix

@@ -8,39 +8,72 @@ from dotenv import dotenv_values
 
 
 nm_cidr_dict = {
-    "255.255.255.255", "/32",
-    "255.255.255.254", "/31",
-    "255.255.255.252", "/30",
-    "255.255.255.248", "/29",
-    "255.255.255.240", "/28",
-    "255.255.255.224", "/27",
-    "255.255.255.192", "/26",
-    "255.255.255.128", "/25",
-    "255.255.255.0", "/24",
-    "255.255.254.0", "/23",
-    "255.255.252.0", "/22",
-    "255.255.248.0", "/21",
-    "255.255.240.0", "/20",
-    "255.255.224.0", "/19",
-    "255.255.192.0", "/18",
-    "255.255.128.0", "/17",
-    "255.255.0.0", "/16",
-    "255.254.0.0", "/15",
-    "255.252.0.0", "/14",
-    "255.248.0.0", "/13",
-    "255.240.0.0", "/12",
-    "255.224.0.0", "/11",
-    "255.192.0.0", "/10",
-    "255.128.0.0", "/9",
-    "255.0.0.0", "/8",
-    "254.0.0.0", "/7",
-    "252.0.0.0", "/6",
-    "248.0.0.0", "/5",
-    "240.0.0.0", "/4",
-    "224.0.0.0", "/3",
-    "192.0.0.0", "/2",
-    "128.0.0.0", "/1",
-    "0.0.0.0", "/0"
+    "255.255.255.255",
+    "/32",
+    "255.255.255.254",
+    "/31",
+    "255.255.255.252",
+    "/30",
+    "255.255.255.248",
+    "/29",
+    "255.255.255.240",
+    "/28",
+    "255.255.255.224",
+    "/27",
+    "255.255.255.192",
+    "/26",
+    "255.255.255.128",
+    "/25",
+    "255.255.255.0",
+    "/24",
+    "255.255.254.0",
+    "/23",
+    "255.255.252.0",
+    "/22",
+    "255.255.248.0",
+    "/21",
+    "255.255.240.0",
+    "/20",
+    "255.255.224.0",
+    "/19",
+    "255.255.192.0",
+    "/18",
+    "255.255.128.0",
+    "/17",
+    "255.255.0.0",
+    "/16",
+    "255.254.0.0",
+    "/15",
+    "255.252.0.0",
+    "/14",
+    "255.248.0.0",
+    "/13",
+    "255.240.0.0",
+    "/12",
+    "255.224.0.0",
+    "/11",
+    "255.192.0.0",
+    "/10",
+    "255.128.0.0",
+    "/9",
+    "255.0.0.0",
+    "/8",
+    "254.0.0.0",
+    "/7",
+    "252.0.0.0",
+    "/6",
+    "248.0.0.0",
+    "/5",
+    "240.0.0.0",
+    "/4",
+    "224.0.0.0",
+    "/3",
+    "192.0.0.0",
+    "/2",
+    "128.0.0.0",
+    "/1",
+    "0.0.0.0",
+    "/0",
 }
 
 
@@ -48,8 +81,8 @@ def connect_netbox():
     config = dotenv_values("netbox.env")
 
     try:
-        token = config['token']
-        url = config['url']
+        token = config["token"]
+        url = config["url"]
     except KeyError:
         print("key missing from env file")
         sys.exit()
@@ -73,7 +106,9 @@ def show_all_netbox_devices(nb) -> None:
     """show all devices in netbox"""
     devices = nb.dcim.devices.all()
     for device in devices:
-        print(f"{str(device.id):<6} {str(device):<30}  {str(device.primary_ip):<20}  {str(device.device_role)}")
+        print(
+            f"{str(device.id):<6} {str(device):<30}  {str(device.primary_ip):<20}  {str(device.device_role)}"
+        )
 
 
 def get_netbox_device_count(nb):
@@ -210,11 +245,17 @@ def get_ip_device_info(nb, ip) -> bool:
             if result.assigned_object.device.id:
                 print(f"assigned object.device.id: {result.assigned_object.device.id}")
             if result.assigned_object.device.name:
-                print(f"assigned object.device.name: {result.assigned_object.device.name}")
+                print(
+                    f"assigned object.device.name: {result.assigned_object.device.name}"
+                )
             if result.assigned_object.device.url:
-                print(f"assigned object.device.url: {result.assigned_object.device.url}")
+                print(
+                    f"assigned object.device.url: {result.assigned_object.device.url}"
+                )
             if result.assigned_object.device.display:
-                print(f"assigned object.device.display: {result.assigned_object.device.display}")
+                print(
+                    f"assigned object.device.display: {result.assigned_object.device.display}"
+                )
 
             # get the device using result.object.device.id
             device = nb.dcim.devices.get(result.assigned_object.device.id)
@@ -259,7 +300,9 @@ def get_device_role_id(nb, device_role: str) -> int:
         return -1
 
 
-def create_netbox_device(nb, device_name: str, site: str, device_type: str, device_role:str) -> str:
+def create_netbox_device(
+    nb, device_name: str, site: str, device_type: str, device_role: str
+) -> str:
     """add a device into netbox"""
     try:
         result = nb.dcim.devices.create(
@@ -345,7 +388,6 @@ def add_contact(nb, contact_name: str) -> bool:
         return False
 
 
-
 def modify_contact() -> bool:
     """modify a netbox contact"""
     ...
@@ -403,7 +445,7 @@ def get_bgp_community_desc(nb, community: str) -> str:
     """Get the description for a specific BGP Community from Netbox"""
     try:
         rv = nb.plugins.bgp.community.get(value=community)
-        return (rv['description'])
+        return rv["description"]
     except Exception as e:
         print(f"Exception getting {community} from Netbox")
         return ""
@@ -416,7 +458,7 @@ def get_all_bgp_communities(nb) -> dict:
         communities = nb.plugins.bgp.community.all()
         for community in communities:
             bgp_community_dict[community] = community.description
-        return (bgp_community_dict)
+        return bgp_community_dict
     except Exception as e:
         print(f"Exception getting communities from Netbox: {e}")
 
@@ -438,7 +480,7 @@ def add_ipv4_ip(nb, cidr: str) -> str:
     else:
         set_reserved_status: bool = False
         description: str = ""
-        ip_addr = cidr.split('/')[0]
+        ip_addr = cidr.split("/")[0]
         ifc: IPv4Interface = IPv4Interface(cidr)
         net: IPv4Network = IPv4Network(ifc.network)
 

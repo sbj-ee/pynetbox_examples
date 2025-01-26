@@ -15,22 +15,23 @@ from netboxlib import add_ipv4_ip
 
 urllib3.disable_warnings()
 
+
 def main(cidr: str):
     """main code for adding the subnet"""
 
     try:
         ifc: IPv4Interface = IPv4Interface(cidr)
-        nm: str = cidr.split('/', maxsplit=1)[1]
+        nm: str = cidr.split("/", maxsplit=1)[1]
     except Exception as e:
         logger.info(f"invalid cidr: {cidr} {e}")
         sys.exit()
 
     if int(nm) <= 22:
         proceed: str = input(f"A large subnet - Are you sure? Y or N: ")
-        if proceed.lower() != 'y':
+        if proceed.lower() != "y":
             logger.info("Exiting - proceed check was {proceed}")
             sys.exit()
-            
+
     net: IPv4Network = IPv4Network(ifc.network)
 
     # add the subnet and broadcast
@@ -47,7 +48,7 @@ def main(cidr: str):
         subnet_host_list: list = list(ip_network(ifc.network).hosts())
         logger.info("adding all hosts")
         for host in subnet_host_list:
-            ip = str(host).split('/', maxsplit=1)[0]
+            ip = str(host).split("/", maxsplit=1)[0]
             ip_addr: str = f"{ip}/{nm}"
             logger.info(f"adding host: {ip_addr}")
             rv = add_ipv4_ip(nb, ip_addr)
@@ -64,14 +65,16 @@ if __name__ == "__main__":
     logger.info("Executing add_ipv4_subnet.py")
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--cidr', type=str, required=True, help="indicate the cidr")
+    parser.add_argument(
+        "-c", "--cidr", type=str, required=True, help="indicate the cidr"
+    )
     args = parser.parse_args()
     logger.info(f"cidr passed: {args.cidr}")
 
     config = dotenv_values("netbox.env")
     try:
-        token = config['token']
-        url = config['url']
+        token = config["token"]
+        url = config["url"]
     except KeyError as e:
         print(f"key missing from env file: {e}")
         sys.exit()

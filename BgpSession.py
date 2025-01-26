@@ -24,7 +24,7 @@ if __name__ == "__main__":
         remote_as=11111,
         status="active",
         device="CHCGILDTcor51",
-        comments=""
+        comments="",
     )
 
     print(bgp_sess)
