@@ -2,6 +2,7 @@ from dotenv import dotenv_values
 import pynetbox
 import sys
 from time import sleep
+from netboxlib import add_ipv6_ip
 import urllib3
 
 urllib3.disable_warnings()
@@ -34,5 +35,21 @@ def test_add_ip() -> None:
     response.save()
 
 
+def test_add_ipv6_ip():
+    config = dotenv_values("netbox.env")
+    try:
+        token = config["token"]
+        url = config["url"]
+    except KeyError as e:
+        print(f"key missing from env file: {e}")
+        sys.exit()
+
+    nb = pynetbox.api(url=url, token=token)
+    nb.http_session.verify = False
+    ipv6_ip = "1234:1234:1234::/127"
+    rv = add_ipv6_ip(nb, ipv6_ip)
+    print(rv)
+
+
 if __name__ == "__main__":
-    test_add_ip()
+    test_add_ipv6_ip()

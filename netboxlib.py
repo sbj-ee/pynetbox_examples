@@ -2,7 +2,10 @@ import sys
 import pynetbox
 from ipaddress import IPv4Network
 from ipaddress import IPv4Interface
-from ipaddress import ip_address, IPv4Address
+from ipaddress import ip_address
+from ipaddress import IPv4Address
+from ipaddress import IPv6Network
+from ipaddress import IPv6Interface
 from pprint import pprint
 from dotenv import dotenv_values
 
@@ -483,6 +486,41 @@ def add_ipv4_ip(nb, cidr: str) -> str:
         ip_addr = cidr.split("/")[0]
         ifc: IPv4Interface = IPv4Interface(cidr)
         net: IPv4Network = IPv4Network(ifc.network)
+
+        if str(net.broadcast_address) == str(ip_addr):
+            description = "Broadcast"
+            set_reserved_status = True
+        elif str(ifc.network) == str(cidr):
+            description = "Subnet"
+            set_reserved_status = True
+
+        ip_add_dict = dict(
+            address=cidr,
+            description=description,
+        )
+        new_ip = nb.ipam.ip_addresses.create(ip_add_dict)
+        if set_reserved_status:
+            change_ip_status(nb, cidr, "Reserved")
+        return new_ip
+
+
+def add_ipv6_ip(nb, cidr: str) -> str:
+    """add an ipv6 IP into netbox"""
+    # check to see if it already exists in netbox
+    result = nb.ipam.ip_addresses.get(address=cidr)
+    if result:
+        return "IP Exists"
+    else:
+        set_reserved_status: bool = False
+        description: str = ""
+        ip_addr = cidr.split('/')[0]
+        subnet: int = int(cidr.split('/')[1])
+
+        if subnet < 126:
+            return "Too Large"
+
+        ifc: IPv6Interface = IPv6Interface(cidr)
+        net: IPv6Network = IPv6Network(ifc.network)
 
         if str(net.broadcast_address) == str(ip_addr):
             description = "Broadcast"
