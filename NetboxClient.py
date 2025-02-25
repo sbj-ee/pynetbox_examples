@@ -1,5 +1,6 @@
 import pynetbox
 from loguru import logger
+from getpass import getpass
 
 
 class NetboxClient:
@@ -28,8 +29,8 @@ class NetboxClient:
 
 
 if __name__ == "__main__":
-    netbox_url = ""
-    netbox_token = ""
+    netbox_url = input("Netbox URL: ")
+    netbox_token = getpass("Token: ")
     nb_client = NetboxClient(netbox_url, netbox_token)
     nb_client.setup_logging()
     nb_client.connect()
