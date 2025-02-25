@@ -1,9 +1,5 @@
 import pynetbox
 from loguru import logger
-from ipaddress import IPv4Network
-from ipaddress import IPv4Interface
-from ipaddress import IPv6Network
-from ipaddress import IPv6Interface
 
 
 class NetboxClient:
@@ -19,7 +15,8 @@ class NetboxClient:
         self.nb = pynetbox.api(url=self.url, token=self.token)
         self.nb.http_session.verify = False
 
-    def setup_logging(self) -> None:
+    @staticmethod
+    def setup_logging() -> None:
         """Configure the logging."""
         logger.remove()
         logger.add("./netbox.log")
@@ -31,9 +28,9 @@ class NetboxClient:
 
 
 if __name__ == "__main__":
-    url = ""
-    token = ""
-    nb_client = NetboxClient(url, token)
+    netbox_url = ""
+    netbox_token = ""
+    nb_client = NetboxClient(netbox_url, netbox_token)
     nb_client.setup_logging()
     nb_client.connect()
     print(nb_client.get_pynetbox_version())
