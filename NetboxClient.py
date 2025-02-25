@@ -9,12 +9,14 @@ class NetboxClient:
     def __init__(self, url, token):
         self.url = url
         self.token = token
-        self.nb = None
+        self.nb = self.connect()
+
 
     def connect(self):
         """Get the connection handle for Netbox."""
         self.nb = pynetbox.api(url=self.url, token=self.token)
         self.nb.http_session.verify = False
+        return self.nb
 
     @staticmethod
     def setup_logging() -> None:
@@ -33,5 +35,4 @@ if __name__ == "__main__":
     netbox_token = getpass("Token: ")
     nb_client = NetboxClient(netbox_url, netbox_token)
     nb_client.setup_logging()
-    nb_client.connect()
     print(nb_client.get_pynetbox_version())
