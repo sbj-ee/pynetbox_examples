@@ -1,7 +1,5 @@
 from netboxlib import connect_netbox
 import urllib3
-from pprint import pprint
-from tenacity import retry
 
 urllib3.disable_warnings()
 
@@ -21,9 +19,12 @@ def get_all_netbox_bgp_sessions(nb) -> dict:
             "local_address": session.local_address,
             "status": session.status
         }
+        # print(f"len dict is {len(bgp_sess_dict)}")
     return bgp_sess_dict
 
 if __name__ == "__main__":
     nb = connect_netbox()
     all_sessions = get_all_netbox_bgp_sessions(nb)
-    pprint(all_sessions)
+    print(f"len is {len(all_sessions)}")
+
+    print(f"test case {all_sessions["69.11.245.66"]}")
