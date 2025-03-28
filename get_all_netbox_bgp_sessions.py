@@ -5,6 +5,7 @@ urllib3.disable_warnings()
 
 
 def get_all_netbox_bgp_sessions(nb) -> dict:
+    """Get all the BGP Sessions from Netbox and stuff them into a dict"""
     bgp_sessions = nb.plugins.bgp.session.all()
     bgp_sess_dict = dict()
     for session in bgp_sessions:
