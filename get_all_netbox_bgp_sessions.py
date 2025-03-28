@@ -8,8 +8,9 @@ def get_all_netbox_bgp_sessions(nb) -> dict:
     bgp_sessions = nb.plugins.bgp.session.all()
     bgp_sess_dict = dict()
     for session in bgp_sessions:
-        print(session.id, session.name)
-        bgp_sess_dict[str(session.remote_address).split('/')[0]] = {
+        print(session.id, session.name, session.remote_address, session.local_address)
+        bgp_key: str = f"{str(session.remote_address).split('/')[0]}_{session.local_address.split('/')[0]}"
+        bgp_sess_dict[bgp_key] = {
             "id": session.id,
             "device": session.device,
             "name": session.name,

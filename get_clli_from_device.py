@@ -94,20 +94,12 @@ def get_netbox_site_name(clli: str) -> str:
 
 
 if __name__ == "__main__":
-    rv = get_clli_from_device("ATLNGAMQcor51.network.tds.net")
-    print(rv)
-    rv = get_clli_from_device("CNTCNHdst51.network.tds.net")
-    print(rv)
-    rv = get_clli_from_device("bogus")
-    print(rv)
-    rv = get_clli_from_device("stgrutfkcen13.network.teldta.com")
-    print(rv)
-    rv = get_clli_from_device("mdsnwigjdst51")
-    print(rv)
+    print(get_clli_from_device("ATLNGAMQcor51.network.tds.net"))
+    print(get_clli_from_device("CNTCNHdst51.network.tds.net"))
+    print(get_clli_from_device("bogus"))
+    print(get_clli_from_device("stgrutfkcen13.network.teldta.com"))
+    print(get_clli_from_device("mdsnwigjdst51"))
 
-    nb_site_name = get_netbox_site_name(get_clli_from_device("atlngamqcor52.network.tds.net"))
-    print(nb_site_name)
-    nb_site_name = get_netbox_site_name(get_clli_from_device("bendoryddst51.network.tds.net"))
-    print(nb_site_name)
-    nb_site_name = get_netbox_site_name(get_clli_from_device("CDCYUTEZcen02.network.teldta.com"))
-    print(nb_site_name)
+    print(get_netbox_site_name(get_clli_from_device("atlngamqcor52.network.tds.net")))
+    print(get_netbox_site_name(get_clli_from_device("bendoryddst51.network.tds.net")))
+    print(get_netbox_site_name(get_clli_from_device("CDCYUTEZcen02.network.teldta.com")))
