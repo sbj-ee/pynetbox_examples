@@ -6,6 +6,7 @@ def get_clli_from_device(device_fqdn: str) -> str:
 
     # TDS Device names for routers will be ATLNGAMQcor51.network.tds.net
     # TDS Device names for switches will be STGRUTFKcen13.network.teldta.com
+    # Some anomalies exist like CNTCNHdst51
     hostname = device_fqdn.split('.')[0]
     if len(hostname) == 13:
         clli = hostname[:8]
