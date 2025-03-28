@@ -1,5 +1,5 @@
 from pprint import pprint
-
+from get_clli_from_device import get_clli_from_device, get_netbox_site_name
 
 remote_address = "66.66.66.66"
 local_address = "55.55.55.55"
@@ -7,8 +7,8 @@ local_address = "55.55.55.55"
 remote_as = 12345
 local_as = 4181
 
-site = "ATLNGAMQ"
 device = "ATLNGAMQcor51"
+site = get_netbox_site_name(get_clli_from_device(device))
 bgp_name = "Yadda"
 
 bgp_sess = {
