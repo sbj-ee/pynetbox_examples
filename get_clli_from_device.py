@@ -12,6 +12,8 @@ def get_clli_from_device(device_fqdn: str) -> str:
         clli = hostname[:8]
     elif len(hostname) == 11:
         clli = hostname[:6]
+    elif len(hostname) == 16:    # CCW specific
+        clli = hostname[:11]
     else:
         print("unknown device hostname length")
     
@@ -61,7 +63,7 @@ def get_netbox_site_name(clli: str) -> str:
         'MDRSORBO': "MDRSORBO",
         'MDSNWIGJ': "MDSNWIGJ - Schroeder Rd Madison",
         'MDSNWIKW': "MDSNWIKW",
-        'MDSNWIVU': "MDSNWIVU",
+        'MDSNWIVU01N': "MDSNWIVU01N",
         'MDTNWIXA': "MDTNWIXA",
         'MNTIMNXA': "MNTIMNXA",
         'MOSNWIXA': "MOSNWIXA",
