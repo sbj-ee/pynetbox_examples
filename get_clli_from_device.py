@@ -105,3 +105,4 @@ if __name__ == "__main__":
     print(get_netbox_site_name(get_clli_from_device("atlngamqcor52.network.tds.net")))
     print(get_netbox_site_name(get_clli_from_device("bendoryddst51.network.tds.net")))
     print(get_netbox_site_name(get_clli_from_device("CDCYUTEZcen02.network.teldta.com")))
+    print(get_netbox_site_name(get_clli_from_device("MDSNWIVU01Ndst53.network.teldta.com")))
