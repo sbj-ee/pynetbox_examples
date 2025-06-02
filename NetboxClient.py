@@ -110,6 +110,45 @@ class NetboxClient:
             print(e)
             return None
 
+    def add_device(self, device_site: str, device_name: str, device_role: str, device_type_name: str) -> dict:
+        """Add a device into netbox"""
+        try:
+            device_data = {
+                    "name": device_name,
+                    "device_type": self.get_device_type_id(device_type_name),
+                    "role": self.get_role_id(device_role),
+                    "site": self.get_site_id(device_site),
+            }
+            device = self.nb.dcim.devices.create(device_data)
+            return dict(device)
+        except pynetbox.core.query.RequestError as e:
+            raise Exception(f"Failed to add device: {str(device_name)} : {e}")
+
+    def get_device_id(self, device_name: str) -> int | None:
+        """Get the device id for a specified device"""
+        try:
+            device = self.nb.dcim.devices.get(name=device_name)
+            return device.id
+        except Exception as e:
+            print(f"exception: {e}")
+            return None
+
+    def add_interface_to_device(self, interface_name: str, device_name: str, interface_type: str, interface_desc: str) -> bool:
+        """Add an interface to a device"""
+        try:
+            interface_data = {
+                    "device": self.get_device_id(device_name),
+                    "name": interface_name,
+                    "type": interface_type,
+                    "enabled": True,
+                    "description":interface_desc
+            }
+            new_interface = self.nb.dcim.interfaces.create(**interface_data)
+            return True
+        except Exception as e:
+            print(f"Exception : {e}")
+            return False
+
 
 if __name__ == "__main__":
     netbox_url = input("Netbox URL: ")
@@ -120,15 +159,19 @@ if __name__ == "__main__":
     # ip_addr = "216.170.130.221"
     # print(f"check if IP exists in netbox: {nb_client.check_if_cidr_exists(ip_addr)}")
     # print(nb_client.get_cidr_from_ip(ip_addr))
-    my_device = "FTBGWIIEagg03"
-    print(f"device {my_device} in netbox is {nb_client.check_if_device_name_exists(my_device)}")
+    # my_device = "FTBGWIIEagg03"
+    # print(f"device {my_device} in netbox is {nb_client.check_if_device_name_exists(my_device)}")
 
-    my_site_name = "STGRUTFK"
-    print(f"site {my_site_name} id is {nb_client.get_site_id(my_site_name)}")
+    # my_site_name = "STGRUTFK"
+    # print(f"site {my_site_name} id is {nb_client.get_site_id(my_site_name)}")
 
-    my_role = "Switch"
-    print(f"Switch role id is {nb_client.get_role_id(my_role)}")
+    # my_role = "Switch"
+    # print(f"Switch role id is {nb_client.get_role_id(my_role)}")
 
-    my_device_type = "93180YC-EX"
-    print(f"Device type {my_device_type} id is {nb_client.get_device_type_id(my_device_type)}")
+    # my_device_type = "93180YC-EX"
+    # print(f"Device type {my_device_type} id is {nb_client.get_device_type_id(my_device_type)}")
+
+    # print(nb_client.add_device("SNRVORAT", "SNRVORATcen30", "Router", "ASR-920-24SZ-IM"))
+
+    print(nb_client.add_interface_to_device("Lo555", "SNRVORATcen30", "virtual", ""))
 
