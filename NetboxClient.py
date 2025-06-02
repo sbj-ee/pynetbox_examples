@@ -149,6 +149,41 @@ class NetboxClient:
             print(f"Exception : {e}")
             return False
 
+    def get_interface_id(self, device_name: str, interface_name: str) -> int | None:
+        """Get the interface id for an interface."""
+        try:
+            interface = self.nb.dcim.interfaces.get(device_id=self.get_device_id(device_name), name=interface_name)
+            return interface.id
+        except Exception as e:
+            print(f"Exception: {e}")
+            return None
+
+    def add_ip_to_interface(self, device_name: str, interface_name: str, ip_addr: str, status: str, description: str) -> bool:
+        """Add an IP to an interface."""
+        try:
+            ip_data = {
+                    "address": ip_addr,
+                    "interface": self.get_interface_id(device_name, interface_name),
+                    "status": status,
+                    "description": description
+            }
+            new_ip = self.nb.ipam.ip_addresses.create(**ip_data)
+            return True
+        except Exception as e:
+            print(f"Exception: {e}")
+            return False
+
+    def show_circuits_all(self) -> None:
+        """Get all the netbox circuits"""
+        try:
+            circuits = self.nb.circuits.circuits.all()
+            for circuit in circuits:
+                print(f"Circuit ID: {circuit.id}, CID: {circuit.cid}, Provider: {circuit.provider.name}, Status: {circuit.status.value}, Description: {circuit.description or 'N/A'}")
+            return None
+        except Exception as e:
+            print(f"Exception: {e}")
+            return None
+
 
 if __name__ == "__main__":
     netbox_url = input("Netbox URL: ")
@@ -171,7 +206,9 @@ if __name__ == "__main__":
     # my_device_type = "93180YC-EX"
     # print(f"Device type {my_device_type} id is {nb_client.get_device_type_id(my_device_type)}")
 
-    # print(nb_client.add_device("SNRVORAT", "SNRVORATcen30", "Router", "ASR-920-24SZ-IM"))
+    # print(nb_client.add_device("STPTWI001", "STPTWI001cen02", "Router", "ASR-920-24SZ-IM"))
+    # print(nb_client.add_interface_to_device("Lo555", "STPTWI001cen02", "virtual", "ISP Management and Source Interface"))
+    # print(nb_client.add_ip_to_interface("STPTWI001cen02", "Lo555", "64.50.230.117/32", "active", "ISP Management and Source Interface"))
 
-    print(nb_client.add_interface_to_device("Lo555", "SNRVORATcen30", "virtual", ""))
+    nb_client.show_circuits_all()
 
