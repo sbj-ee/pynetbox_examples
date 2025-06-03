@@ -9,7 +9,6 @@ from pynetbox.core.response import RecordSet
 
 urllib3.disable_warnings()
 
-
 class NetboxClient:
     """A client for using the Netbox API"""
 
@@ -18,26 +17,55 @@ class NetboxClient:
         self.token = token
         self.nb = self.connect()
 
-
     def connect(self):
-        """Get the connection handle for Netbox."""
+        """
+        Establishes a connection to the NetBox API and returns the API client instance.
+
+        Initializes the pynetbox API client using the provided URL and authentication token.
+        Disables SSL certificate verification for the HTTP session.
+
+        Returns:
+            pynetbox.api.Api: An instance of the NetBox API client.
+        """
         self.nb = pynetbox.api(url=self.url, token=self.token)
         self.nb.http_session.verify = False
         return self.nb
 
     @staticmethod
     def setup_logging() -> None:
-        """Configure the logging."""
+        """
+        Configures the logging system by removing existing handlers and adding a new log file handler.
+        Logs an informational message indicating that logging has been configured.
+        """
         logger.remove()
         logger.add("./netbox.log")
         logger.info("Logging configured...")
 
     def get_pynetbox_version(self) -> str:
-        """get the netbox version"""
+        """
+        Retrieves the current NetBox version from the NetBox API.
+
+        Returns:
+            str: The version string of the connected NetBox instance.
+        """
         return str(self.nb.status()["netbox-version"])
 
     def check_if_cidr_exists(self, cidr: str) -> bool:
-        """given a CIDR, check to see if that CIDR is in netbox"""
+        """
+        Checks if a given CIDR exists in NetBox.
+
+        Args:
+            cidr (str): The CIDR address to check (e.g., '192.168.1.0/24').
+
+        Returns:
+            bool: True if the CIDR exists in NetBox, False otherwise.
+
+        Raises:
+            pynetbox.RequestError: If there is an error communicating with the NetBox API.
+
+        Note:
+            Prints the error message if a RequestError is encountered.
+        """
         result = False
         try:
             result = self.nb.ipam.ip_addresses.get(address=cidr)
@@ -50,7 +78,21 @@ class NetboxClient:
             return False
 
     def get_cidr_from_ip(self, ip: str) -> str:
-        """"given an IP, return the CIDR if it exists in netbox"""
+        """
+        Given an IP address, attempts to find and return the most specific CIDR notation
+        for that IP address that exists in NetBox.
+
+        Args:
+            ip (str): The IP address to search for.
+
+        Returns:
+            str: The CIDR notation (e.g., '192.0.2.1/32') if found in NetBox, otherwise None.
+
+        Note:
+            The function checks all possible prefix lengths for the given IP version,
+            starting from the most specific (e.g., /32 for IPv4, /128 for IPv6) down to /1.
+            It returns the first matching CIDR found in NetBox.
+        """
         max_bitrange: int = 128
         ip_type = ip_address(ip)
         if isinstance(ip_type, IPv4Address):
@@ -64,7 +106,21 @@ class NetboxClient:
                 return cidr
 
     def check_if_device_name_exists(self, device_name: str) -> bool:
-        """check if a device name exists in netbox"""
+        """
+        Checks if a device with the specified name exists in NetBox.
+
+        Args:
+            device_name (str): The name of the device to check.
+
+        Returns:
+            bool: True if the device exists, False otherwise.
+
+        Raises:
+            Exception: If an unexpected error occurs during the lookup.
+
+        Note:
+            Prints the device object if found, and prints exception details if an error occurs.
+        """
         try:
             device_name = self.nb.dcim.devices.get(name=device_name)
             print(f"device_name = {device_name}")
@@ -77,7 +133,18 @@ class NetboxClient:
             return False
 
     def get_site_id(self, site_name: str) -> int | None:
-        """Get the site id for a given site."""
+        """
+        Retrieves the unique identifier (ID) of a site given its name.
+
+        Args:
+            site_name (str): The name of the site to look up.
+
+        Returns:
+            int | None: The ID of the site if found, otherwise None.
+
+        Raises:
+            Exception: If an error occurs during the lookup, the exception is caught and None is returned.
+        """
         try:
             site = self.nb.dcim.sites.get(name=site_name)
             return site.id
@@ -86,7 +153,18 @@ class NetboxClient:
             return None
 
     def get_device_id(self, device_name: str) -> int | None:
-        """Get the device id for a given device"""
+        """
+        Retrieves the unique identifier (ID) of a device from NetBox by its name.
+
+        Args:
+            device_name (str): The name of the device to look up.
+
+        Returns:
+            int | None: The ID of the device if found, otherwise None.
+
+        Raises:
+            Exception: If an error occurs during the API request, the exception is caught and None is returned.
+        """
         try:
             device = self.nb.dcim.devices.get(name=device_name)
             return device.id
@@ -95,7 +173,18 @@ class NetboxClient:
             return None
 
     def get_role_id(self, role_name: str) -> int | None:
-        """ Get the role id for a given role"""
+        """
+        Retrieve the ID of a device role by its name.
+
+        Args:
+            role_name (str): The name of the device role to look up.
+
+        Returns:
+            int | None: The ID of the device role if found, otherwise None.
+
+        Raises:
+            Exception: If an error occurs during the lookup, the exception is caught and None is returned.
+        """
         try:
             role = self.nb.dcim.device_roles.get(name=role_name)
             return role.id
@@ -104,7 +193,18 @@ class NetboxClient:
             return None
 
     def get_device_type_id(self, device_type_name: str) -> int | None:
-        """Get the device_type id for a given device type."""
+        """
+        Retrieve the ID of a device type given its name.
+
+        Args:
+            device_type_name (str): The name of the device type to look up.
+
+        Returns:
+            int | None: The ID of the device type if found, otherwise None.
+
+        Raises:
+            Exception: If there is an error during the lookup, the exception is caught and None is returned.
+        """
         try:
             device_type = self.nb.dcim.device_types.get(model=device_type_name)
             return device_type.id
@@ -113,7 +213,21 @@ class NetboxClient:
             return None
 
     def add_device(self, device_site: str, device_name: str, device_role: str, device_type_name: str) -> dict:
-        """Add a device into netbox"""
+        """
+        Adds a new device to NetBox.
+
+        Args:
+            device_site (str): The name or slug of the site where the device will be added.
+            device_name (str): The name of the device to be created.
+            device_role (str): The role assigned to the device.
+            device_type_name (str): The name of the device type.
+
+        Returns:
+            dict: A dictionary representation of the newly created device.
+
+        Raises:
+            Exception: If the device could not be added due to a request error.
+        """
         try:
             device_data = {
                     "name": device_name,
@@ -127,7 +241,21 @@ class NetboxClient:
             raise Exception(f"Failed to add device: {str(device_name)} : {e}")
 
     def add_interface_to_device(self, interface_name: str, device_name: str, interface_type: str, interface_desc: str) -> bool:
-        """Add an interface to a device"""
+        """
+        Adds a new interface to a specified device in NetBox.
+
+        Args:
+            interface_name (str): The name of the interface to add.
+            device_name (str): The name of the device to which the interface will be added.
+            interface_type (str): The type of the interface (e.g., '1000base-t', 'virtual', etc.).
+            interface_desc (str): A description for the interface.
+
+        Returns:
+            bool: True if the interface was successfully added, False otherwise.
+
+        Raises:
+            Exception: Prints the exception message if an error occurs during interface creation.
+        """
         try:
             interface_data = {
                     "device": self.get_device_id(device_name),
@@ -143,7 +271,19 @@ class NetboxClient:
             return False
 
     def get_interface_id(self, device_name: str, interface_name: str) -> int | None:
-        """Get the interface id for an interface."""
+        """
+        Retrieve the unique identifier (ID) of a specific interface on a given device.
+
+        Args:
+            device_name (str): The name of the device containing the interface.
+            interface_name (str): The name of the interface whose ID is to be retrieved.
+
+        Returns:
+            int | None: The ID of the interface if found, otherwise None.
+
+        Raises:
+            Exception: If there is an error retrieving the interface, the exception is caught and None is returned.
+        """
         try:
             interface = self.nb.dcim.interfaces.get(device_id=self.get_device_id(device_name), name=interface_name)
             return interface.id
@@ -152,7 +292,19 @@ class NetboxClient:
             return None
 
     def add_ip_to_interface(self, device_name: str, interface_name: str, ip_addr: str, status: str, description: str) -> bool:
-        """Add an IP to an interface."""
+        """
+        Adds an IP address to a specified interface on a device.
+
+        Args:
+            device_name (str): The name of the device to which the interface belongs.
+            interface_name (str): The name of the interface to assign the IP address.
+            ip_addr (str): The IP address to assign (in CIDR notation).
+            status (str): The status to assign to the IP address (e.g., 'active', 'reserved').
+            description (str): A description for the IP address.
+
+        Returns:
+            bool: True if the IP address was successfully added, False otherwise.
+        """
         try:
             ip_data = {
                     "address": ip_addr,
@@ -167,7 +319,18 @@ class NetboxClient:
             return False
 
     def get_ipaddress_id(self, ip_addr: str) -> int | None:
-        """Get the ipaddress id for a given IP."""
+        """
+        Retrieve the unique identifier (ID) of an IP address from NetBox.
+
+        Args:
+            ip_addr (str): The IP address to look up.
+
+        Returns:
+            int | None: The ID of the IP address if found, otherwise None.
+
+        Raises:
+            Exception: If there is an error during the lookup, the exception is caught and None is returned.
+        """
         try:
             ipaddress = self.nb.ipam.ip_addresses.get(address=ip_addr)
             return ipaddress.id
@@ -176,7 +339,18 @@ class NetboxClient:
             return None
 
     def get_as_id(self, asn: int) -> int | None:
-        """Get the AS id for a given ASN."""
+        """
+        Retrieve the unique identifier (ID) for an Autonomous System (AS) given its ASN.
+
+        Args:
+            asn (int): The Autonomous System Number to look up.
+
+        Returns:
+            int | None: The ID of the AS if found, otherwise None.
+
+        Raises:
+            Exception: If an error occurs during the lookup, the exception is caught and None is returned.
+        """
         try:
             asn_entry = self.nb.ipam.asns.get(asn=asn)
             return asn_entry.id
@@ -185,7 +359,25 @@ class NetboxClient:
             return None
 
     def add_bgp_session(self, site: str, remote_as: int, remote_ip: str, local_as: int, local_ip: str, device: str, bgp_name: str, status: str) -> dict | None:
-        """Add a BGP Session."""
+        """
+        Add a BGP Session to NetBox.
+
+        Args:
+            site (str): The name or identifier of the site where the BGP session will be created.
+            remote_as (int): The remote Autonomous System (AS) number.
+            remote_ip (str): The remote peer's IP address.
+            local_as (int): The local Autonomous System (AS) number.
+            local_ip (str): The local peer's IP address.
+            device (str): The name or identifier of the device associated with the BGP session.
+            bgp_name (str): The name to assign to the BGP session.
+            status (str): The operational status of the BGP session.
+
+        Returns:
+            dict | None: The created BGP session object as a dictionary if successful, otherwise None.
+
+        Raises:
+            Exception: Prints the exception message if an error occurs during session creation.
+        """
         try:
             session_info = {
                     "name": bgp_name,
@@ -205,7 +397,15 @@ class NetboxClient:
             return None
 
     def get_bgp_sessions_all(self) -> RecordSet | None:
-        """Get ll the BGP Sessions."""
+        """
+        Retrieve all BGP sessions from the NetBox API.
+
+        Returns:
+            RecordSet | None: A set of BGP session records if successful, otherwise None.
+
+        Raises:
+            Exception: If an error occurs while fetching BGP sessions, the exception is caught and logged.
+        """
         try:
             bgp_sessions = self.nb.plugins.bgp.session.all()
             return bgp_sessions
@@ -214,7 +414,19 @@ class NetboxClient:
             return None
 
     def get_bgp_session_by_device_and_address(self, device_name: str, remote_addr: str):
-        """Get a BGP Session by device and remote address."""
+        """
+        Retrieve a BGP session for a given device and remote address.
+
+        Args:
+            device_name (str): The name of the device to search for.
+            remote_addr (str): The remote address of the BGP session.
+
+        Returns:
+            object or None: The first matching BGP session object if found, otherwise None.
+
+        Raises:
+            Exception: If an error occurs during the API call, prints the exception and returns None.
+        """
         try:
             sessions = self.nb.plugins.bgp.session.filter(device=device_name, remote_address=remote_addr)
             return next(iter(sessions), None)
@@ -223,7 +435,21 @@ class NetboxClient:
             return None
 
     def print_bgp_session_by_device_and_address(self, device_name: str, remote_addr: str) -> None:
-        """Print the BGP Session information."""
+        """
+        Prints the BGP session information for a given device and remote address.
+
+        Args:
+            device_name (str): The name of the device to search for the BGP session.
+            remote_addr (str): The remote address of the BGP peer.
+
+        Returns:
+            None
+
+        Behavior:
+            - Retrieves the BGP session matching the specified device and remote address.
+            - If a session is found, prints a formatted table row with session details including ID, device, peer, remote AS, remote address, and status.
+            - If no session is found, prints a message indicating that no session was found for the given device and remote address.
+        """
         session = self.get_bgp_session_by_device_and_address(device_name, remote_addr)
         if session:
             device_name = str(session.device) if session.device else "N/A"
@@ -238,7 +464,18 @@ class NetboxClient:
             print(f"No BGP session found for device {device_name} with remote address {remote_addr}")
 
     def validate_ip_cidr(self, cidr_string: str) -> str:
-        """Validate if the input is a proper ipv4 or ipv6 address."""
+        """
+        Validates whether the provided string is a valid IPv4 or IPv6 address in CIDR notation.
+
+        Args:
+            cidr_string (str): The IP address in CIDR notation (e.g., '192.168.1.0/24' or '2001:db8::/32').
+
+        Returns:
+            str: The normalized CIDR string in the format 'network_address/prefixlen'.
+
+        Raises:
+            ValueError: If the input string is not a valid CIDR address.
+        """
         try:
             # Validate CIDR notation (IP with subnet mask)
             my_ip_network = ipaddress.ip_network(cidr_string, strict=False)
@@ -248,7 +485,21 @@ class NetboxClient:
             raise ValueError(f"Invalid CIDR address: {cidr_string} - {str(e)}")
 
     def add_ip_to_netbox(self, cidr_string: str, description: str, status: str) -> str | None:
-        """Add an IP address into Netbox after validation."""
+        """
+        Adds an IP address to NetBox after validating the CIDR notation and checking for duplicates.
+
+        Args:
+            cidr_string (str): The IP address in CIDR notation to add to NetBox.
+            description (str): A description for the IP address.
+            status (str): The status to assign to the IP address in NetBox.
+
+        Returns:
+            str | None: The newly created IP address object if successful, or None if the IP already exists or an error occurs.
+
+        Raises:
+            ValueError: If the provided CIDR string is invalid.
+            Exception: For any other errors encountered during the process.
+        """
         try:
             # Validate CIDR address
             validated_cidr = self.validate_ip_cidr(cidr_string)
