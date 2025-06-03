@@ -2,6 +2,7 @@ import pynetbox
 from loguru import logger
 from getpass import getpass
 import urllib3
+import ipaddress
 from ipaddress import ip_address, IPv4Address
 from typing import Union, Optional
 from pynetbox.core.response import RecordSet
@@ -236,6 +237,47 @@ class NetboxClient:
         else:
             print(f"No BGP session found for device {device_name} with remote address {remote_addr}")
 
+    def validate_ip_cidr(self, cidr_string: str) -> str:
+        """Validate if the input is a proper ipv4 or ipv6 address."""
+        try:
+            # Validate CIDR notation (IP with subnet mask)
+            my_ip_network = ipaddress.ip_network(cidr_string, strict=False)
+            # Extract the IP address with the prefix length
+            return f"{my_ip_network.network_address}/{my_ip_network.prefixlen}"
+        except ValueError as e:
+            raise ValueError(f"Invalid CIDR address: {cidr_string} - {str(e)}")
+
+    def add_ip_to_netbox(self, cidr_string: str, description: str, status: str) -> str | None:
+        """Add an IP address into Netbox after validation."""
+        try:
+            # Validate CIDR address
+            validated_cidr = self.validate_ip_cidr(cidr_string)
+
+            # Check if the IP/CIDR already exists in Netbox
+            if self.check_if_cidr_exists(cidr_string):
+                print(f"CIDR {cidr_string} already exists in Netbox")
+                return None
+
+            # Prepare IP data for NetBox
+            ip_data = {
+                "address": validated_cidr,
+                "status": status,
+                "description": description
+            }
+
+            # Add IP to NetBox
+            ipam = nb.ipam.ip_addresses
+            new_ip = ipam.create(**ip_data)
+
+            print(f"Successfully added {validated_cidr} to NetBox")
+            return new_ip
+        except ValueError as e:
+            print(f"Validation error: {str(e)}")
+            return None
+        except Exception as e:
+            print(f"Error adding IP to NetBox: {str(e)}")
+            return None
+
 
 if __name__ == "__main__":
     netbox_url = input("Netbox URL: ")
@@ -268,4 +310,3 @@ if __name__ == "__main__":
     #     print(f"BGP Session ID: {str(session.id):>6}   Device: {str(session.device):<18}   Remote IP: {str(session.remote_address):>30}  Name: {str(session.name)}")
 
     nb_client.print_bgp_session_by_device_and_address("LSANCARCcor52", "206.72.211.104/23")
-
