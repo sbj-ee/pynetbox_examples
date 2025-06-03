@@ -4,6 +4,7 @@ from getpass import getpass
 import urllib3
 from ipaddress import ip_address, IPv4Address
 from typing import Union, Optional
+from pynetbox.core.response import RecordSet
 
 urllib3.disable_warnings()
 
@@ -71,7 +72,7 @@ class NetboxClient:
             else:
                 raise "Device not found exception"
         except Exception as e:
-            print(e)
+            print(f"Exception: check_if_device_name_exists : {e}")
             return False
 
     def get_site_id(self, site_name: str) -> int | None:
@@ -80,16 +81,16 @@ class NetboxClient:
             site = self.nb.dcim.sites.get(name=site_name)
             return site.id
         except Exception as e:
-            print(e)
+            print(f"Exception: get_site_id : {e}")
             return None
 
     def get_device_id(self, device_name: str) -> int | None:
         """Get the device id for a given device"""
         try:
-            device = nb.dcim.devices.get(name=device_name)
+            device = self.nb.dcim.devices.get(name=device_name)
             return device.id
         except Exception as e:
-            print(e)
+            print(f"Exception: get_device_id : {e}")
             return None
 
     def get_role_id(self, role_name: str) -> int | None:
@@ -98,7 +99,7 @@ class NetboxClient:
             role = self.nb.dcim.device_roles.get(name=role_name)
             return role.id
         except Exception as e:
-            print(e)
+            print(f"Exception: get_role_id : {e}")
             return None
 
     def get_device_type_id(self, device_type_name: str) -> int | None:
@@ -107,7 +108,7 @@ class NetboxClient:
             device_type = self.nb.dcim.device_types.get(model=device_type_name)
             return device_type.id
         except Exception as e:
-            print(e)
+            print(f"Exception: get_device_type_id : {e}")
             return None
 
     def add_device(self, device_site: str, device_name: str, device_role: str, device_type_name: str) -> dict:
@@ -124,15 +125,6 @@ class NetboxClient:
         except pynetbox.core.query.RequestError as e:
             raise Exception(f"Failed to add device: {str(device_name)} : {e}")
 
-    def get_device_id(self, device_name: str) -> int | None:
-        """Get the device id for a specified device"""
-        try:
-            device = self.nb.dcim.devices.get(name=device_name)
-            return device.id
-        except Exception as e:
-            print(f"exception: {e}")
-            return None
-
     def add_interface_to_device(self, interface_name: str, device_name: str, interface_type: str, interface_desc: str) -> bool:
         """Add an interface to a device"""
         try:
@@ -146,7 +138,7 @@ class NetboxClient:
             new_interface = self.nb.dcim.interfaces.create(**interface_data)
             return True
         except Exception as e:
-            print(f"Exception : {e}")
+            print(f"Exception : add_interface_to_device : {e}")
             return False
 
     def get_interface_id(self, device_name: str, interface_name: str) -> int | None:
@@ -155,7 +147,7 @@ class NetboxClient:
             interface = self.nb.dcim.interfaces.get(device_id=self.get_device_id(device_name), name=interface_name)
             return interface.id
         except Exception as e:
-            print(f"Exception: {e}")
+            print(f"Exception: get_interface_id : {e}")
             return None
 
     def add_ip_to_interface(self, device_name: str, interface_name: str, ip_addr: str, status: str, description: str) -> bool:
@@ -170,19 +162,78 @@ class NetboxClient:
             new_ip = self.nb.ipam.ip_addresses.create(**ip_data)
             return True
         except Exception as e:
-            print(f"Exception: {e}")
+            print(f"Exception: add_ip_to_interface : {e}")
             return False
 
-    def show_circuits_all(self) -> None:
-        """Get all the netbox circuits"""
+    def get_ipaddress_id(self, ip_addr: str) -> int | None:
+        """Get the ipaddress id for a given IP."""
         try:
-            circuits = self.nb.circuits.circuits.all()
-            for circuit in circuits:
-                print(f"Circuit ID: {circuit.id}, CID: {circuit.cid}, Provider: {circuit.provider.name}, Status: {circuit.status.value}, Description: {circuit.description or 'N/A'}")
-            return None
+            ipaddress = self.nb.ipam.ip_addresses.get(address=ip_addr)
+            return ipaddress.id
         except Exception as e:
-            print(f"Exception: {e}")
+            print(f"Exception: get_ipaddress_id: {e}")
             return None
+
+    def get_as_id(self, asn: int) -> int | None:
+        """Get the AS id for a given ASN."""
+        try:
+            asn_entry = self.nb.ipam.asns.get(asn=asn)
+            return asn_entry.id
+        except Exception as e:
+            print(f"Exception: get_as_id : {e}")
+            return None
+
+    def add_bgp_session(self, site: str, remote_as: int, remote_ip: str, local_as: int, local_ip: str, device: str, bgp_name: str, status: str) -> dict | None:
+        """Add a BGP Session."""
+        try:
+            session_info = {
+                    "name": bgp_name,
+                    "description": bgp_name,
+                    "local_as": self.get_as_id(local_as),
+                    "local_address": self.get_ipaddress_id(local_ip),
+                    "remote_as": self.get_as_id(remote_as),
+                    "remote_address": self.get_ipaddress_id(remote_ip),
+                    "device": self.get_device_id(device),
+                    "status": status,
+                    "site": self.get_site_id(site),
+            }
+            bgp_session = self.nb.plugins.bgp.session.create(session_info)
+            return bgp_session
+        except Exception as e:
+            print(f"Exception add_bgp_session: {e}")
+            return None
+
+    def get_bgp_sessions_all(self) -> RecordSet | None:
+        """Get ll the BGP Sessions."""
+        try:
+            bgp_sessions = self.nb.plugins.bgp.session.all()
+            return bgp_sessions
+        except Exception as e:
+            print(f"Exception: get_bgp_sessions_all : {e}")
+            return None
+
+    def get_bgp_session_by_device_and_address(self, device_name: str, remote_addr: str):
+        """Get a BGP Session by device and remote address."""
+        try:
+            sessions = self.nb.plugins.bgp.session.filter(device__name=device_name, remote_address__address=remote_addr)
+            return next(iter(sessions), None)
+        except Exception as e:
+            print(f"Exception: get_bgp_session_by_device : {e}")
+            return None
+
+    def print_bgp_session_by_device_and_address(self, device_name: str, remote_addr: str) -> None:
+        """Print the BGP Session information."""
+        session = self.get_bgp_session_by_device_and_address(device_name, remote_addr)
+        if session:
+            device_name = str(session.device) if session.device else "N/A"
+            peer_name = str(session.name) if session.name else "N/A"
+            status = str(session.status) if session.status else "Unknown"
+            peer_as = str(session.remote_as) if session.remote_as else "Unknown"
+            print(f"{'ID':>5} {'Device':<20} {'Peer':<30} {'Remote AS':<36} {'Remote Address':<45} {'Status':<15}")
+            print("-" * 150)
+            print(f"{session.id:>5} {device_name:<20.15} {peer_name:<30.20} {peer_as:<36.30} {remote_addr:<45.36} {status:<15}")
+        else:
+            print(f"No BGP session found for device {device_name} with remote address {remote_addr}")
 
 
 if __name__ == "__main__":
@@ -210,5 +261,10 @@ if __name__ == "__main__":
     # print(nb_client.add_interface_to_device("Lo555", "STPTWI001cen02", "virtual", "ISP Management and Source Interface"))
     # print(nb_client.add_ip_to_interface("STPTWI001cen02", "Lo555", "64.50.230.117/32", "active", "ISP Management and Source Interface"))
 
-    nb_client.show_circuits_all()
+    # print(nb_client.add_bgp_session("ABDLWIXA", 4150, "66.66.66.0/30", 4181, "66.66.66.1/30", "MDSNWIGJdst53", "Testing BGP Add", "active"))
+    # my_bgp_sessions = nb_client.get_bgp_sessions_all()
+    # for session in my_bgp_sessions:
+    #     print(f"BGP Session ID: {str(session.id):>6}   Device: {str(session.device):<18}   Remote IP: {str(session.remote_address):>30}  Name: {str(session.name)}")
+
+    nb_client.print_bgp_session_by_device_and_address("LSANCARCcor52", "206.72.211.104/23")
 
