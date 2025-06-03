@@ -215,7 +215,7 @@ class NetboxClient:
     def get_bgp_session_by_device_and_address(self, device_name: str, remote_addr: str):
         """Get a BGP Session by device and remote address."""
         try:
-            sessions = self.nb.plugins.bgp.session.filter(device__name=device_name, remote_address__address=remote_addr)
+            sessions = self.nb.plugins.bgp.session.filter(device=device_name, remote_address=remote_addr)
             return next(iter(sessions), None)
         except Exception as e:
             print(f"Exception: get_bgp_session_by_device : {e}")
@@ -229,9 +229,10 @@ class NetboxClient:
             peer_name = str(session.name) if session.name else "N/A"
             status = str(session.status) if session.status else "Unknown"
             peer_as = str(session.remote_as) if session.remote_as else "Unknown"
+            remote_ip = str(session.remote_address) if session.remote_address else "Unknown"
             print(f"{'ID':>5} {'Device':<20} {'Peer':<30} {'Remote AS':<36} {'Remote Address':<45} {'Status':<15}")
             print("-" * 150)
-            print(f"{session.id:>5} {device_name:<20.15} {peer_name:<30.20} {peer_as:<36.30} {remote_addr:<45.36} {status:<15}")
+            print(f"{session.id:>5} {device_name:<20.15} {peer_name:<30.20} {peer_as:<36.30} {remote_ip:<45.36} {status:<15}")
         else:
             print(f"No BGP session found for device {device_name} with remote address {remote_addr}")
 
