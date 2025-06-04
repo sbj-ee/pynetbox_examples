@@ -1,140 +1,130 @@
+from dotenv import dotenv_values
+import argparse
 import sqlite3
-import netmiko
-from datetime import datetime
 import re
-import sys
-from typing import List, Dict
+from netmiko import ConnectHandler
+from datetime import datetime
 
-def connect_to_router(device: Dict) -> netmiko.ConnectHandler:
-    """Connect to a router using Netmiko."""
-    try:
-        return netmiko.ConnectHandler(**device)
-    except Exception as e:
-        print(f"Failed to connect to {device['host']}: {e}")
-        return None
-
-def get_bgp_sessions_iosxr(connection: netmiko.ConnectHandler) -> List[Dict]:
-    """Retrieve BGP sessions from IOS-XR router."""
-    output = connection.send_command("show bgp summary")
-    sessions = []
-    neighbor_pattern = re.compile(r"(\S+)\s+(\d+)\s+(\S+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+(\d+/\d+)")
-    
-    for line in output.splitlines():
-        match = neighbor_pattern.search(line)
-        if match:
-            sessions.append({
-                "neighbor_ip": match.group(1),
-                "remote_as": match.group(2),
-                "state": match.group(3),
-                "prefixes_received": match.group(4)
-            })
-    return sessions
-
-def get_bgp_sessions_sros(connection: netmiko.ConnectHandler) -> List[Dict]:
-    """Retrieve BGP sessions from Nokia SR OS router."""
-    output = connection.send_command("show router bgp summary")
-    sessions = []
-    neighbor_pattern = re.compile(r"(\S+)\s+(\d+)\s+(\S+)\s+\S+\s+\S+\s+(\d+/\d+)")
-    
-    for line in output.splitlines():
-        match = neighbor_pattern.search(line)
-        if match:
-            sessions.append({
-                "neighbor_ip": match.group(1),
-                "remote_as": match.group(2),
-                "state": match.group(3),
-                "prefixes_received": match.group(4)
-            })
-    return sessions
-
-def init_db(db_path: str) -> sqlite3.Connection:
-    """Initialize SQLite database and create bgp_sessions table if it doesn't exist."""
-    conn = sqlite3.connect(db_path)
+def create_database():
+    # Connect to SQLite database (creates if doesn't exist)
+    conn = sqlite3.connect('bgp_neighbors.db')
     cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS bgp_sessions (
-            hostname TEXT,
+
+    # Create table if it doesn't exist
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS bgp_neighbors (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            router_name TEXT,
             neighbor_ip TEXT,
-            remote_as INTEGER,
-            local_as INTEGER,
+            as_number TEXT,
             state TEXT,
-            prefixes_received TEXT,
-            last_updated TIMESTAMP,
-            PRIMARY KEY (hostname, neighbor_ip)
+            prefix_received INTEGER,
+            timestamp TEXT
         )
-    """)
+    ''')
     conn.commit()
     return conn
 
-def update_db(conn: sqlite3.Connection, hostname: str, sessions: List[Dict], local_as: int):
-    """Update or insert BGP session data into the database."""
-    cursor = conn.cursor()
-    timestamp = datetime.now().isoformat()
-    
-    for session in sessions:
-        cursor.execute("""
-            INSERT OR REPLACE INTO bgp_sessions 
-            (hostname, neighbor_ip, remote_as, local_as, state, prefixes_received, last_updated)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (
-            hostname,
-            session["neighbor_ip"],
-            int(session["remote_as"]),
-            local_as,
-            session["state"],
-            session["prefixes_received"],
-            timestamp
-        ))
-    conn.commit()
+def parse_bgp_output(output, router_name):
+    # Regular expression to match BGP neighbor lines
+    # Adjust pattern based on actual output format
+    pattern = r'(\S+)\s+(\d+)\s+(\d+)\s+([^\n]+?)\s+([\d\w:]+)\s+(\S+)'
+    neighbors = []
+
+    for line in output.splitlines():
+        match = re.match(pattern, line.strip())
+        if match:
+            neighbor_ip = match.group(1)
+            as_number = match.group(2)
+            state = match.group(3)
+            prefix_received = int(match.group(4)) if match.group(4).isdigit() else 0
+            neighbors.append({
+                'neighbor_ip': neighbor_ip,
+                'as_number': as_number,
+                'state': state,
+                'prefix_received': prefix_received
+            })
+    return neighbors
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-e', '--env', type=str, required=False, default='prod', help="specify the environment (prod, lab)")
+    parser.add_argument('-r', '--router', type=str, required=True, help="indicate the router")
+    args = parser.parse_args()
+
+
+    if args.env == "prod" or args.env == "production":
+        env_file = "/home/usrsbj/.sbj_creds/ipno.env"
+        environment = "production"
+    elif args.env == "lab":
+        env_file = "/home/usrsbj/.sbj_creds/ipno.lab.env"
+        environment = "lab"
+    else:
+        print(f"unknown environment: {str(args.env)}")
+        sys.exit()
+
+    config = dotenv_values(env_file)
+
+
     # Router configuration
     routers = [
         {
-            "device_type": "cisco_xr",
-            "host": "192.168.1.1",
-            "username": "admin",
-            "password": "password",
-            "port": 22,
-            "local_as": 65001
+            "device_type": "cisco_ios",
+            "host": args.router,
+            "username": config['username'],
+            "password": config['password'],
         },
-        {
-            "device_type": "nokia_sros",
-            "host": "192.168.1.2",
-            "username": "admin",
-            "password": "password",
-            "port": 22,
-            "local_as": 65002
-        }
+        #{
+        #    "device_type": "nokia_sros",
+        #    "host": "192.168.1.2",
+        #    "username": "admin",
+        #    "password": "password",
+        #}
     ]
-    
-    db_path = "bgp_sessions.db"
-    conn = init_db(db_path)
-    
-    for router in routers:
-        connection = connect_to_router(router)
-        if not connection:
-            continue
-            
-        hostname = connection.find_prompt().strip("#>")
-        if router["device_type"] == "cisco_xr":
-            sessions = get_bgp_sessions_iosxr(connection)
-        elif router["device_type"] == "nokia_sros":
-            sessions = get_bgp_sessions_sros(connection)
-        else:
-            print(f"Unsupported device type for {router['host']}")
-            connection.disconnect()
-            continue
-            
-        update_db(conn, hostname, sessions, router["local_as"])
-        print(f"Updated BGP sessions for {hostname}")
-        connection.disconnect()
-    
-    conn.close()
 
-if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        print(f"Error: {e}")
-        sys.exit(1)
+    conn = create_database()
+    cursor = conn.cursor()
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    for router in routers:
+        router_name = router['host']
+        try:
+            print(f"Connecting to {router_name}...")
+            # Establish SSH connection
+            net_connect = ConnectHandler(**router)
+
+            # Execute command
+            output = net_connect.send_command('show bgp neighbor brief wide')
+
+            # Parse output
+            neighbors = parse_bgp_output(output, router_name)
+
+            # Insert data into database
+            for neighbor in neighbors:
+                cursor.execute('''
+                    INSERT INTO bgp_neighbors (router_name, neighbor_ip, as_number, state, prefix_received, timestamp)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ''', (
+                    router_name,
+                    neighbor['neighbor_ip'],
+                    neighbor['as_number'],
+                    neighbor['state'],
+                    neighbor['prefix_received'],
+                    timestamp
+                ))
+
+            print(f"Successfully processed {router_name}")
+            net_connect.disconnect()
+
+        except Exception as e:
+            print(f"Error processing {router_name}: {str(e)}")
+
+        # Commit changes after each router
+        conn.commit()
+
+    # Close database connection
+    conn.close()
+    print("Data collection complete. Results stored in bgp_neighbors.db")
+
+if __name__ == '__main__':
+    main()
