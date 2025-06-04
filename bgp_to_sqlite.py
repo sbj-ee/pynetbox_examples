@@ -35,8 +35,8 @@ def parse_bgp_output(output, router_name):
         match = re.match(pattern, line.strip())
         if match:
             neighbor_ip = match.group(1)
-            as_number = match.group(2)
-            state = match.group(3)
+            as_number = match.group(3)
+            state = match.group(6)
             prefix_received = int(match.group(4)) if match.group(4).isdigit() else 0
             neighbors.append({
                 'neighbor_ip': neighbor_ip,
