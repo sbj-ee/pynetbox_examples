@@ -32,22 +32,39 @@ def display_session_details(session):
     print(f"Peer Group: {session.peer_group.name if session.peer_group else 'None'}")
     print(f"Status: {session.status.label if session.status else 'None'}")
 
-def get_ip_address_id(prompt):
-    """Prompt for an IP address and return its ID."""
-    ip_input = input(f"{prompt} (enter IP address or leave blank to keep unchanged): ").strip()
-    if not ip_input:
+def is_valid_cidr(cidr: str) -> bool:
+    """
+    Validate if a given string is a valid CIDR notation.
+    
+    Args:
+        cidr: String in CIDR format (e.g., '192.168.1.0/24')
+        
+    Returns:
+        bool: True if valid CIDR, False otherwise
+    """
+    try:
+        # Attempt to create an IP network object
+        ipaddress.ip_network(cidr, strict=True)
+        return True
+    except ValueError:
+        return False
+        
+def get_ip_cidr_id(prompt):
+    """Prompt for an IP CIDR address and return its ID."""
+    cidr_input = input(f"{prompt} (enter IP address or leave blank to keep unchanged): ").strip()
+    if not cidr_input:
         return None
     try:
-        # Validate IP address format
-        ipaddress.ip_address(ip_input)
-        # Find IP address in NetBox
-        ip_obj = nb.ipam.ip_addresses.get(address=ip_input)
-        if not ip_obj:
-            print(f"IP address {ip_input} not found in NetBox.")
-            return None
-        return ip_obj.id
+        # Validate IP CIDR address format
+        if is_valid_cidr(cidr_input):
+            # Find IP address in NetBox
+            ip_obj = nb.ipam.ip_addresses.get(address=ip_input)
+            if not ip_obj:
+                print(f"CIDR address {cidr_input} not found in NetBox.")
+                return None
+            return ip_obj.id
     except ValueError:
-        print(f"Invalid IP address format: {ip_input}")
+        print(f"Invalid IP address format: {cidr_input}")
         return None
     except Exception as e:
         print(f"Error finding IP address: {e}")
@@ -72,8 +89,8 @@ def update_bgp_session(session):
     """Prompt for changes and update the BGP session."""
     try:
         print("\nLeave fields blank to keep them unchanged.")
-        local_address_id = get_ip_address_id("Enter new local IP address")
-        remote_address_id = get_ip_address_id("Enter new remote IP address")
+        local_address_id = get_ip_cidr_id("Enter new local IP CIDR address")
+        remote_address_id = get_ip_cidr_id("Enter new remote IP CIDR address")
         device_id = get_device_id()
 
         # Prepare update payload
