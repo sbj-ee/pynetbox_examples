@@ -63,6 +63,9 @@ def get_ip_cidr_id(prompt):
                 print(f"CIDR address {cidr_input} not found in NetBox.")
                 return None
             return ip_obj.id
+        else:
+            print(f"Not a valid CIDR {cidr_input}")
+            return None
     except ValueError:
         print(f"Invalid IP address format: {cidr_input}")
         return None
