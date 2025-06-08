@@ -22,8 +22,8 @@ def is_valid_cidr(cidr: str) -> bool:
         return False
 
 if __name__ == "__main__":
-  print(f"{is_valid_cidr('10.16.252.20/24'}")
-  print(f"{is_valid_cidr('10.16.252.20'}")
-  print(f"{is_valid_cidr('2001:db8::/32'}")
-  print(f"{is_valid_cidr('2001:db8::/129'}")
+  print(f"{is_valid_cidr('10.16.252.20/24')}")
+  print(f"{is_valid_cidr('10.16.252.20')}")
+  print(f"{is_valid_cidr('2001:db8::/32')}")
+  print(f"{is_valid_cidr('2001:db8::/129')}")
   
