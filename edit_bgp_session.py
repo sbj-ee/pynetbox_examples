@@ -42,6 +42,10 @@ def is_valid_cidr(cidr: str) -> bool:
     Returns:
         bool: True if valid CIDR, False otherwise
     """
+    # Explicitly check for prefix
+    if '/' not in cidr:
+        return False
+        
     try:
         # Attempt to create an IP network object
         ipaddress.ip_network(cidr, strict=True)
