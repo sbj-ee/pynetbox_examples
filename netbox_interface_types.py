@@ -1,3 +1,5 @@
+"""This module defines a mapping of interface types to their corresponding NetBox interface type slugs."""
+
 interface_types = {
     # Virtual interfaces
     "Virtual": "virtual",
@@ -96,3 +98,15 @@ interface_types = {
     "Other": "other"
 }
 
+
+if __name__ == "__main__":
+    # Example usage
+    for interface, slug in interface_types.items():
+        print(f"Interface Type: {interface}, NetBox Slug: {slug}")
+    
+    # You can also access a specific type
+    print(interface_types.get("10GBASE-T", "Not Found"))
+    print(interface_types.get("Unknown Type", "Not Found"))
+    # This will print the NetBox slug for the specified interface type
+    # If the type does not exist, it will return "Not Found"
+    # Example of checking if a type exists
