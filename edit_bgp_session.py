@@ -1,19 +1,23 @@
 import pynetbox
 import ipaddress
 from getpass import getpass
+import urllib3
+
+urllib3.disable_warnings()
 
 # NetBox connection details
-NETBOX_URL = "http://your-netbox-url.com"  # Replace with your NetBox URL
+NETBOX_URL = input("Netbox URL: ")
 API_TOKEN = getpass("Enter your NetBox API token: ")
 
 # Initialize pynetbox API client
 nb = pynetbox.api(url=NETBOX_URL, token=API_TOKEN)
+nb.http_session.verify = False
 
 def get_bgp_session():
     """Retrieve a BGP session by ID."""
     try:
         session_id = input("Enter the BGP session ID to edit: ")
-        session = nb.plugins.bgpsessions.sessions.get(session_id)
+        session = nb.plugins.bgp.session.get(id=session_id)
         if not session:
             print(f"No BGP session found with ID {session_id}")
             return None
@@ -31,47 +35,24 @@ def display_session_details(session):
     print(f"Remote Address: {session.remote_address.address if session.remote_address else 'None'} (ID: {session.remote_address.id if session.remote_address else 'None'})")
     print(f"Peer Group: {session.peer_group.name if session.peer_group else 'None'}")
     print(f"Status: {session.status.label if session.status else 'None'}")
+    print(f"Site: {session.site.name if session.site else 'None'} (ID: {session.site.id if session.site else 'None'})")
 
-def is_valid_cidr(cidr: str) -> bool:
-    """
-    Validate if a given string is a valid CIDR notation.
-    
-    Args:
-        cidr: String in CIDR format (e.g., '192.168.1.0/24')
-        
-    Returns:
-        bool: True if valid CIDR, False otherwise
-    """
-    # Explicitly check for prefix
-    if '/' not in cidr:
-        return False
-        
-    try:
-        # Attempt to create an IP network object
-        ipaddress.ip_network(cidr, strict=True)
-        return True
-    except ValueError:
-        return False
-        
-def get_ip_cidr_id(prompt):
-    """Prompt for an IP CIDR address and return its ID."""
-    cidr_input = input(f"{prompt} (enter IP address or leave blank to keep unchanged): ").strip()
-    if not cidr_input:
+def get_ip_address_id(prompt):
+    """Prompt for an IP address and return its ID."""
+    ip_input = input(f"{prompt} (enter IP address or leave blank to keep unchanged): ").strip()
+    if not ip_input:
         return None
     try:
-        # Validate IP CIDR address format
-        if is_valid_cidr(cidr_input):
-            # Find IP address in NetBox
-            ip_obj = nb.ipam.ip_addresses.get(address=ip_input)
-            if not ip_obj:
-                print(f"CIDR address {cidr_input} not found in NetBox.")
-                return None
-            return ip_obj.id
-        else:
-            print(f"Not a valid CIDR {cidr_input}")
+        # Validate IP address format
+        ipaddress.ip_address(ip_input)
+        # Find IP address in NetBox
+        ip_obj = nb.ipam.ip_addresses.get(address=ip_input)
+        if not ip_obj:
+            print(f"IP address {ip_input} not found in NetBox.")
             return None
+        return ip_obj.id
     except ValueError:
-        print(f"Invalid IP address format: {cidr_input}")
+        print(f"Invalid IP address format: {ip_input}")
         return None
     except Exception as e:
         print(f"Error finding IP address: {e}")
@@ -92,13 +73,29 @@ def get_device_id():
         print(f"Error finding device: {e}")
         return None
 
+def get_site_id():
+    """Prompt for a site name and return its ID."""
+    site_name = input("Enter new site name (or leave blank to keep unchanged): ").strip()
+    if not site_name:
+        return None
+    try:
+        site = nb.dcim.sites.get(name=site_name)
+        if not site:
+            print(f"Site {site_name} not found in NetBox.")
+            return None
+        return site.id
+    except Exception as e:
+        print(f"Error finding site: {e}")
+        return None
+
 def update_bgp_session(session):
     """Prompt for changes and update the BGP session."""
     try:
         print("\nLeave fields blank to keep them unchanged.")
-        local_address_id = get_ip_cidr_id("Enter new local IP CIDR address")
-        remote_address_id = get_ip_cidr_id("Enter new remote IP CIDR address")
+        local_address_id = get_ip_address_id("Enter new local IP address")
+        remote_address_id = get_ip_address_id("Enter new remote IP address")
         device_id = get_device_id()
+        site_id = get_site_id()
 
         # Prepare update payload
         update_data = {}
@@ -108,6 +105,8 @@ def update_bgp_session(session):
             update_data['remote_address'] = remote_address_id
         if device_id:
             update_data['device'] = device_id
+        if site_id:
+            update_data['site'] = site_id
 
         if update_data:
             # Update the session
