@@ -17,15 +17,30 @@ from pprint import pprint
 
 def test_add_ip_prefix():
     nb = connect_netbox()
-    prefix_dict = {"prefix": "192.168.7.0/24"}
-    add_ip_prefix(nb, prefix=prefix_dict)
-    assert True
+    prefix_str = "192.168.7.0/24"
+    # Ensure clean state
+    try:
+        delete_ip_prefix(nb, prefix_str)
+    except:
+        pass
+
+    prefix_dict = {"prefix": prefix_str}
+    result = add_ip_prefix(nb, prefix=prefix_dict)
+    assert result is True
+    
+    # Cleanup
+    delete_ip_prefix(nb, prefix_str)
 
 
 def test_delete_ip_prefix():
     # FIX - this is not deleting
     nb = connect_netbox()
     prefix = "192.168.7.0/24"
+    
+    # Ensure it exists first so we can test deleting it
+    prefix_dict = {"prefix": prefix}
+    add_ip_prefix(nb, prefix=prefix_dict)
+
     rv = delete_ip_prefix(nb, prefix)
     if rv:
         assert True

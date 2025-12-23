@@ -22,6 +22,10 @@ def test_add_contact() -> None:
     contact_name: str = "Bob Dole"
 
     rv = nb.tenancy.contacts.create(name=contact_name)
+    
+    if rv:
+        # Cleanup
+        rv.delete()
 
     if rv:
         assert True
@@ -41,10 +45,19 @@ def test_modify_contact():
     nb.http_session.verify = False
 
     contact_name: str = "Bob Dole"
+    
+    # Setup - ensure contact exists
+    contact = nb.tenancy.contacts.create(name=contact_name)
+    if not contact:
+         # Try getting it if creating fails (might already exist)
+         contact = nb.tenancy.contacts.get(name=contact_name)
 
-    contact_ref = nb.tenancy.contacts.get(name=contact_name)
-    contact_ref.title = "Miner yabba dabba do"
-    contact_ref.save()
+    contact.title = "Miner yabba dabba do"
+    contact.save()
+    
+    # Cleanup
+    if contact:
+        contact.delete()
 
 
 def test_delete_contact():
@@ -59,9 +72,20 @@ def test_delete_contact():
     nb.http_session.verify = False
 
     contact_name: str = "Bob Dole"
+    
+    # Setup - ensure contact exists
+    try:
+        nb.tenancy.contacts.create(name=contact_name)
+    except:
+        pass # If it exists that is fine too
 
     contact_ref = nb.tenancy.contacts.get(name=contact_name)
-    rv = nb.tenancy.contacts.delete([contact_ref])
+    # The list wrapper [contact_ref] logic seems odd for simple delete, usually contact_ref.delete()
+    # But adhering to original logic structure for now, just ensuring it exists.
+    if contact_ref:
+        rv = contact_ref.delete()
+    else:
+        rv = False
 
     if rv:
         assert True

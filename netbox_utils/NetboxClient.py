@@ -304,6 +304,70 @@ class NetboxClient:
             print(f"Exception: get_circuit : {e}")
             return None
 
+    def get_vlan_group_id(self, name: str) -> int | None:
+        """Get the ID of a VLAN Group."""
+        try:
+            # VLAN groups are unique by name per site, or global.
+            # For simplicity here we just search by name.
+            groups = self.nb.ipam.vlan_groups.filter(name=name)
+            group = next(iter(groups), None)
+            return group.id if group else None
+        except Exception as e:
+            print(f"Exception: get_vlan_group_id : {e}")
+            return None
+
+    def add_vlan_group(self, name: str, slug: str, site_name: str = None, description: str = "") -> dict | None:
+        """Add a VLAN Group."""
+        try:
+            data = {
+                "name": name,
+                "slug": slug,
+                "description": description
+            }
+            if site_name:
+                data["scope_type"] = "dcim.site"
+                data["scope_id"] = self.get_site_id(site_name)
+
+            group = self.nb.ipam.vlan_groups.create(**data)
+            return dict(group)
+        except Exception as e:
+            print(f"Exception: add_vlan_group : {e}")
+            return None
+
+    def get_vlan(self, vid: int, site_name: str = None) -> int | None:
+        """Get a VLAN object ID by VID and optional Site."""
+        try:
+            kwargs = {"vid": vid}
+            if site_name:
+                kwargs["site_id"] = self.get_site_id(site_name)
+            
+            vlans = self.nb.ipam.vlans.filter(**kwargs)
+            vlan = next(iter(vlans), None)
+            return vlan.id if vlan else None
+        except Exception as e:
+            print(f"Exception: get_vlan : {e}")
+            return None
+
+    def add_vlan(self, vid: int, name: str, site_name: str = None, group_name: str = None, description: str = "", status: str = "active") -> dict | None:
+        """Add a VLAN."""
+        try:
+            data = {
+                "vid": vid,
+                "name": name,
+                "status": status,
+                "description": description
+            }
+            if site_name:
+                data["site"] = self.get_site_id(site_name)
+            if group_name:
+                data["group"] = self.get_vlan_group_id(group_name)
+
+            vlan = self.nb.ipam.vlans.create(**data)
+            return dict(vlan)
+        except Exception as e:
+            print(f"Exception: add_vlan : {e}")
+            return None
+
 
 if __name__ == "__main__":
     netbox_url = getenv("NETBOX_URL")
