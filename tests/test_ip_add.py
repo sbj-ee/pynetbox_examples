@@ -1,20 +1,21 @@
-from dotenv import dotenv_values
+from os import getenv
 import pynetbox
 import sys
 from time import sleep
-from netboxlib import add_ipv6_ip
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from netbox_utils.netboxlib import add_ipv6_ip
 import urllib3
 
 urllib3.disable_warnings()
 
 
 def test_add_ip() -> None:
-    config = dotenv_values("netbox.env")
-    try:
-        token = config["token"]
-        url = config["url"]
-    except KeyError as e:
-        print(f"key missing from env file: {e}")
+    token = getenv("NETBOX_TOKEN")
+    url = getenv("NETBOX_URL")
+    if not token or not url:
+        print("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
         sys.exit()
 
     nb = pynetbox.api(url=url, token=token)
@@ -23,8 +24,13 @@ def test_add_ip() -> None:
     for i in range(8):
         cidr = f"66.66.66.{i}{subnet}"
         ip_add_dict = dict(address=cidr, description="testing yadda")
-        new_ip = nb.ipam.ip_addresses.create(ip_add_dict)
-        print(f"new_ip = {new_ip}")
+        try:
+            nb.ipam.ip_addresses.create(ip_add_dict)
+        except pynetbox.RequestError as e:
+            if "Duplicate IP address" in str(e):
+                print(f"IP {cidr} already exists")
+            else:
+                raise e
 
     sleep(5)
 
@@ -36,12 +42,10 @@ def test_add_ip() -> None:
 
 
 def test_add_ipv6_ip():
-    config = dotenv_values("netbox.env")
-    try:
-        token = config["token"]
-        url = config["url"]
-    except KeyError as e:
-        print(f"key missing from env file: {e}")
+    token = getenv("NETBOX_TOKEN")
+    url = getenv("NETBOX_URL")
+    if not token or not url:
+        print("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
         sys.exit()
 
     nb = pynetbox.api(url=url, token=token)

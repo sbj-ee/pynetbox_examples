@@ -5,8 +5,16 @@ import urllib3
 urllib3.disable_warnings()
 
 # NetBox connection details
-NETBOX_URL = input("Enter Netbox URL: ")
-API_TOKEN = input("Enter token: ")
+from os import getenv
+import sys
+
+# NetBox connection details
+NETBOX_URL = getenv("NETBOX_URL")
+API_TOKEN = getenv("NETBOX_TOKEN")
+
+if not NETBOX_URL or not API_TOKEN:
+    print("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
+    sys.exit()
 
 # Initialize pynetbox client
 nb = pynetbox.api(url=NETBOX_URL, token=API_TOKEN)

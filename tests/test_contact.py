@@ -1,4 +1,4 @@
-from dotenv import dotenv_values
+from os import getenv
 import pynetbox
 import sys
 from pprint import pprint
@@ -9,13 +9,11 @@ urllib3.disable_warnings()
 
 
 def test_add_contact() -> None:
-    config = dotenv_values("netbox.env")
+    token = getenv("NETBOX_TOKEN")
+    url = getenv("NETBOX_URL")
 
-    try:
-        token = config["token"]
-        url = config["url"]
-    except KeyError:
-        print("key missing from env file")
+    if not token or not url:
+        print("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
         sys.exit()
 
     nb = pynetbox.api(url=url, token=token)
@@ -32,13 +30,11 @@ def test_add_contact() -> None:
 
 
 def test_modify_contact():
-    config = dotenv_values("netbox.env")
+    token = getenv("NETBOX_TOKEN")
+    url = getenv("NETBOX_URL")
 
-    try:
-        token = config["token"]
-        url = config["url"]
-    except KeyError:
-        print("key missing from env file")
+    if not token or not url:
+        print("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
         sys.exit()
 
     nb = pynetbox.api(url=url, token=token)
@@ -52,13 +48,11 @@ def test_modify_contact():
 
 
 def test_delete_contact():
-    config = dotenv_values("netbox.env")
+    token = getenv("NETBOX_TOKEN")
+    url = getenv("NETBOX_URL")
 
-    try:
-        token = config["token"]
-        url = config["url"]
-    except KeyError:
-        print("key missing from env file")
+    if not token or not url:
+        print("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
         sys.exit()
 
     nb = pynetbox.api(url=url, token=token)

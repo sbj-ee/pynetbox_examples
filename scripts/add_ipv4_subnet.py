@@ -8,10 +8,13 @@ import argparse
 from ipaddress import ip_network
 from ipaddress import IPv4Interface, IPv4Network
 import urllib3
-from dotenv import dotenv_values
+from os import getenv
 from loguru import logger
 import pynetbox
-from netboxlib import add_ipv4_ip
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from netbox_utils.netboxlib import add_ipv4_ip
 
 urllib3.disable_warnings()
 
@@ -71,12 +74,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     logger.info(f"cidr passed: {args.cidr}")
 
-    config = dotenv_values("netbox.env")
-    try:
-        token = config["token"]
-        url = config["url"]
-    except KeyError as e:
-        print(f"key missing from env file: {e}")
+    token = getenv("NETBOX_TOKEN")
+    url = getenv("NETBOX_URL")
+
+    if not token or not url:
+        print("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
         sys.exit()
 
     logger.info(f"netbox url: {url}")

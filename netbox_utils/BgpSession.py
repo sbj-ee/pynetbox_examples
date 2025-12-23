@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from get_clli_from_device import get_clli_from_device, get_netbox_site_name
+from .get_clli_from_device import get_clli_from_device, get_netbox_site_name
 
 @dataclass
 class BgpSession:

@@ -1,9 +1,17 @@
-import pynetbox
+from os import getenv
+import sys
 
 # Initialize NetBox API client
+token = getenv("NETBOX_TOKEN")
+url = getenv("NETBOX_URL")
+
+if not token or not url:
+    print("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
+    sys.exit()
+
 nb = pynetbox.api(
-    url="https://netbox.example.com",
-    token="your_api_token"
+    url=url,
+    token=token
 )
 
 # Get the device

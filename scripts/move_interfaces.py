@@ -1,9 +1,16 @@
-import pynetbox
-import getpass
+from os import getenv
 
 # NetBox connection details
-NETBOX_URL = "http://your-netbox-url"  # Replace with your NetBox URL
-API_TOKEN = "your-api-token"  # Replace with your NetBox API token
+NETBOX_URL = getenv("NETBOX_URL")
+API_TOKEN = getenv("NETBOX_TOKEN")
+
+if not NETBOX_URL or not API_TOKEN:
+    print("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
+    # continue or exit? The original code had placeholders, checking logic usually follows.
+    # The original didn't exit, but code using placeholders would fail.
+    # Let's import sys and exit if missing so user knows.
+    import sys
+    sys.exit()
 
 # Initialize pynetbox API
 nb = pynetbox.api(url=NETBOX_URL, token=API_TOKEN)

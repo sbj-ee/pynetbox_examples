@@ -10,8 +10,17 @@ import logging
 
 
 # NetBox connection details
-NETBOX_URL = input("Enter Netbox URL: ")
-NETBOX_TOKEN = input("Enter token: ")
+from os import getenv
+
+# NetBox connection details
+NETBOX_URL = getenv("NETBOX_URL")
+NETBOX_TOKEN = getenv("NETBOX_TOKEN")
+
+if not NETBOX_URL or not NETBOX_TOKEN:
+    print("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
+    # We allow script to continue if just variables are defined, but let's see where they are used. 
+    # They are passed to main.
+    
 ROUTER_NAME = input("Enter router name: ")
 
 

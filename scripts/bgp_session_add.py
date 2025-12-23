@@ -1,14 +1,17 @@
 """Add a BGP Session into Netbox"""
 
 import argparse
-from dotenv import dotenv_values
+from os import getenv
 from loguru import logger
 import pynetbox
 import sys
 import urllib3
 
 urllib3.disable_warnings()
-from BgpSession import BgpSession
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from netbox_utils.BgpSession import BgpSession
 from pprint import pprint
 
 
@@ -41,12 +44,11 @@ def get_ip_object(nb): ...
 
 
 def main(bgp_session_object: BgpSession):
-    config = dotenv_values("netbox.env")
-    try:
-        token = config["token"]
-        url = config["url"]
-    except KeyError as e:
-        print(f"key missing from env file: {e}")
+    token = getenv("NETBOX_TOKEN")
+    url = getenv("NETBOX_URL")
+
+    if not token or not url:
+        print("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
         sys.exit()
 
     nb = pynetbox.api(url=url, token=token)

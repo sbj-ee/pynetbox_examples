@@ -1,4 +1,4 @@
-from dotenv import dotenv_values
+
 import pynetbox
 import sys
 from pprint import pprint
@@ -6,8 +6,12 @@ from time import sleep
 import urllib3
 
 urllib3.disable_warnings()
-from netboxlib import connect_netbox, add_ip_prefix, get_all_ip_prefixes
-from netboxlib import show_all_ip_prefixes, delete_ip_prefix
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from netbox_utils.netboxlib import connect_netbox, add_ip_prefix, get_all_ip_prefixes
+from netbox_utils.netboxlib import show_all_ip_prefixes, delete_ip_prefix
 from pprint import pprint
 
 

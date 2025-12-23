@@ -1,4 +1,7 @@
-from netboxlib import connect_netbox
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from netbox_utils.netboxlib import connect_netbox
 import urllib3
 
 urllib3.disable_warnings()

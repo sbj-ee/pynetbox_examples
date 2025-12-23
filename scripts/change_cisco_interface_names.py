@@ -1,12 +1,14 @@
 import pynetbox
-from getpass import getpass
-import urllib3
-
-urllib3.disable_warnings()
+from os import getenv
+import sys
 
 # NetBox connection details
-NETBOX_URL = input("Netbox URL: ")
-NETBOX_TOKEN = getpass("Netbox token: ")
+NETBOX_URL = getenv("NETBOX_URL")
+NETBOX_TOKEN = getenv("NETBOX_TOKEN")
+
+if not NETBOX_URL or not NETBOX_TOKEN:
+    print("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
+    sys.exit()
 
 # Interface name mapping
 NAME_MAPPING = {

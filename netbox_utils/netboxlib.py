@@ -1,10 +1,12 @@
 import sys
+import urllib3
+urllib3.disable_warnings()
+from os import getenv
 import pynetbox
 from ipaddress import IPv4Network
 from ipaddress import IPv4Interface
 from ipaddress import ip_address, IPv4Address
 from pprint import pprint
-from dotenv import dotenv_values
 
 
 nm_cidr_dict = {
@@ -45,13 +47,11 @@ nm_cidr_dict = {
 
 
 def connect_netbox():
-    config = dotenv_values("netbox.env")
+    token = getenv("NETBOX_TOKEN")
+    url = getenv("NETBOX_URL")
 
-    try:
-        token = config['token']
-        url = config['url']
-    except KeyError:
-        print("key missing from env file")
+    if not token or not url:
+        print("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
         sys.exit()
 
     nb = pynetbox.api(url=url, token=token)
@@ -452,3 +452,22 @@ def add_ipv4_ip(nb, cidr: str) -> str:
         if set_reserved_status:
             change_ip_status(nb, cidr, "Reserved")
         return new_ip
+
+
+def add_ipv6_ip(nb, cidr: str) -> str:
+    """add an ipv6 IP into netbox"""
+    # check to see if it already exists in netbox
+    try:
+        result = nb.ipam.ip_addresses.get(address=cidr)
+        if result:
+            return "IP Exists"
+        else:
+            ip_add_dict = dict(
+                address=cidr,
+                description="",
+            )
+            new_ip = nb.ipam.ip_addresses.create(ip_add_dict)
+            return new_ip
+    except Exception as e:
+        print(f"Exception adding IPv6: {e}")
+        return "Failed"

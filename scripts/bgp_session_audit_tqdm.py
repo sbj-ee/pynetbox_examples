@@ -19,8 +19,16 @@ logging.basicConfig(filename='bgp_audit.log', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 # NetBox configuration
-NETBOX_URL = input("Netbox URL: ")
-NETBOX_TOKEN = getpass("Netbox Token: ")
+from os import getenv
+import sys
+
+# NetBox configuration
+NETBOX_URL = getenv("NETBOX_URL")
+NETBOX_TOKEN = getenv("NETBOX_TOKEN")
+
+if not NETBOX_URL or not NETBOX_TOKEN:
+    print("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
+    sys.exit()
 router_user = input("Router username: ")
 router_password = getpass("Router password: ")
 
