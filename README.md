@@ -1,13 +1,105 @@
 # pynetbox_examples
-Helpful examples for Netbox
 
-I beat my head against the wall today attempting to change the `Status` for IP addresses. It wasn't clear that the status needed to be lower case. I have examples here which show how one can change different attributes for the Netbox ipam items. If it saves anybody time and frustration, then putting information here will have been my contribution to world happiness.
+This repository contains a collection of Python scripts and utilities for interacting with NetBox using the `pynetbox` library. It includes a reusable library `netbox_utils` and various operational scripts to automate common network automation tasks such as managing IP addresses, devices, interfaces, and BGP sessions.
 
-I'll try to add more examples as I proceed figuring out the different APIs and their nuances.
+## Directory Structure
 
-`netboxlib.py` is the primary code that I'm working on for generic usage.  All the other python files are either testing or being used to determine the pynetbox/netbox usage for something.
+*   **`netbox_utils/`**:  A Python package containing reusable libraries and helper classes.
+    *   `NetboxClient.py`: A comprehensive wrapper class for interacting with the NetBox API.
+    *   `netboxlib.py`: A collection of utility functions for common NetBox operations.
+    *   `ip_info.py`:  Utilities for extracting and displaying IP address information.
+    *   `validate_cidr.py`: Functions for validating CIDR notations.
+    *   `BgpSession.py`: A dataclass representing a BGP session.
+    *   `get_clli_from_device.py`: Logic to extract CLLI codes from device names.
+    *   `netbox_interface_types.py`: Mapping of interface types to NetBox slugs.
 
-`ip_info.py` is where I'm trying out the `ipaddress` module and I'll be making use of it for some of the netboxlib in the near future.
+*   **`scripts/`**: Executable scripts for performing specific tasks.
+    *   `add_ipv4_subnet.py`: Adds an entire IPv4 subnet and its host IPs to NetBox.
+    *   `bgp_session_add.py`: Automates the addition of BGP sessions.
+    *   `bgp_to_sqlite.py`: Exports BGP session data to a SQLite database.
+    *   `change_cisco_interface_names.py`: Renames interfaces on Cisco devices in NetBox.
+    *   `find_dupe_ip.py`: Identifies duplicate IP addresses in NetBox.
+    *   `get_all_netbox_bgp_sessions.py`: Retrieves and lists all BGP sessions.
+    *   `move_interfaces.py`: Moves interfaces from one device to another.
+    *   `sync_iosxr_interfaces.py`: Synchronizes interfaces from IOS-XR devices.
+    *   ... and many more.
 
-# NetboxClient class
-I'm pulling all my netboxlib.py functions into a `NetboxClient` class.
+*   **`tests/`**: Unit and integration tests.
+    *   `test_netbox_client.py`: Unit tests for the `NetboxClient` class (using mocks).
+    *   `test_validate_cidr.py`: Unit tests for CIDR validation logic.
+    *   `test_ip_info.py`: Tests for IP information display.
+    *   `test_ip_add.py`: Integration tests for adding IPs (requires live NetBox).
+    *   `test_contact.py`: Integration tests for contact management.
+
+## Prerequisites
+
+*   Python 3.13+
+*   A NetBox instance (v3.5+ recommended)
+*   `pip` for installing dependencies
+
+## Installation
+
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/stevebj/pynetbox_examples.git
+    cd pynetbox_examples
+    ```
+
+2.  Create and activate a virtual environment:
+    ```bash
+    python3 -m venv .venv
+    source .venv/bin/activate
+    ```
+
+3.  Install dependencies:
+    ```bash
+    pip install pynetbox pytest loguru netmiko tqdm tenacity requests ipaddress pytest-cov
+    ```
+
+## Configuration
+
+The scripts use environment variables for authentication. You must export the following variables in your shell before running any script that connects to NetBox:
+
+```bash
+export NETBOX_URL="https://your-netbox-url.com"
+export NETBOX_TOKEN="your-api-token"
+```
+
+> **Note**: These scripts use `ssl_verify=False` by default for ease of use in lab environments with self-signed certificates.
+
+## Usage
+
+### Running Scripts
+
+You can run any script from the root directory. The scripts resolve imports automatically.
+
+**Example: Adding a BGP Session**
+```bash
+python scripts/bgp_session_add.py --name "Peer-1" --local_as 65001 --remote_as 65002 --device "Router-A" ...
+```
+
+**Example: Finding Duplicate IPs**
+```bash
+python scripts/find_dupe_ip.py
+```
+
+### Running Tests
+
+To run the full test suite with coverage report:
+
+```bash
+pytest --cov=netbox_utils tests
+```
+
+To run a specific test file:
+
+```bash
+pytest tests/test_validate_cidr.py
+```
+
+## Contributing
+
+1.  Create a feature branch.
+2.  Add your changes.
+3.  Ensure all tests pass (`pytest`).
+4.  Add new tests for new functionality.

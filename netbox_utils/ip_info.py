@@ -12,7 +12,7 @@ def ip_info(cidr: str) -> None:
     ip = cidr.split("/")[0]
     if ipaddress.ip_address(ip).version == 4:
         print(f"cidr = {cidr}")
-        net = ipaddress.ip_network(cidr).netmask
+        net = ipaddress.ip_network(cidr, strict=False).netmask
 
         # concatenate the IP and Netmask
         check_this: str = f"{ip}/{net}"
