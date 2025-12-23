@@ -1,5 +1,6 @@
 import sys
 import urllib3
+from loguru import logger
 urllib3.disable_warnings()
 from os import getenv
 import pynetbox
@@ -51,7 +52,7 @@ def connect_netbox():
     url = getenv("NETBOX_URL")
 
     if not token or not url:
-        print("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
+        logger.error("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
         sys.exit()
 
     nb = pynetbox.api(url=url, token=token)
@@ -66,14 +67,14 @@ def get_pynetbox_version(nb) -> str:
 
 def show_pynetbox_version(nb) -> None:
     """display the netbox version"""
-    print(get_pynetbox_version(nb))
+    logger.info(get_pynetbox_version(nb))
 
 
 def show_all_netbox_devices(nb) -> None:
     """show all devices in netbox"""
     devices = nb.dcim.devices.all()
     for device in devices:
-        print(f"{str(device.id):<6} {str(device):<30}  {str(device.primary_ip):<20}  {str(device.device_role)}")
+        logger.info(f"{str(device.id):<6} {str(device):<30}  {str(device.primary_ip):<20}  {str(device.device_role)}")
 
 
 def get_netbox_device_count(nb):
@@ -87,7 +88,7 @@ def check_if_cidr_exists(nb, cidr: str) -> bool:
     try:
         result = nb.ipam.ip_addresses.get(address=cidr)
     except pynetbox.RequestError as e:
-        print(e.error)
+        logger.error(e.error)
     
     if result:
         return True
@@ -106,10 +107,10 @@ def check_if_ip_exists(nb, ip: str) -> bool:
         cidr = f"{ip}/{slash}"
         result = nb.ipam.ip_addresses.get(address=cidr)
         if result:
-            print(f"IP: {ip}  =>  CIDR: {cidr}  exists in netbox")
+            logger.info(f"IP: {ip}  =>  CIDR: {cidr}  exists in netbox")
             rv = True
     if rv is False:
-        print(f"IP: {ip} was not found in netbox")
+        logger.info(f"IP: {ip} was not found in netbox")
     return rv
 
 
@@ -138,7 +139,7 @@ def show_all_ip_prefixes(nb) -> None:
     """show all of the ip prefixes"""
     prefixes = nb.ipam.prefixes.all()
     for pf in prefixes:
-        print(pf)
+        logger.info(pf)
 
 
 def add_ip_prefix(nb, prefix) -> bool:
@@ -169,13 +170,13 @@ def check_if_device_name_exists(nb, device_name: str) -> bool:
     """check if a device name exists in netbox"""
     try:
         device_name = nb.dcim.devices.get(name=device_name)
-        print(f"device_name = {device_name}")
+        logger.info(f"device_name = {device_name}")
         if device_name is not None:
             return True
         else:
-            raise "Device not found exception"
+            raise Exception("Device not found exception")
     except Exception as e:
-        print(e)
+        logger.error(e)
         return False
 
 
@@ -221,9 +222,9 @@ def get_ip_device_info(nb, ip) -> bool:
             
             # get the device using result.object.device.id
             device = nb.dcim.devices.get(result.assigned_object.device.id)
-            pprint(dict(device), indent=4)
+            logger.info(dict(device))
     except pynetbox.RequestError as e:
-        print(e.error)
+        logger.error(e.error)
         return False
 
     return True
@@ -236,7 +237,7 @@ def get_site_id(nb, site: str) -> int:
         if ndev_site is not None:
             return int(ndev_site.id)
     except pynetbox.RequestError as e:
-        print(e.error)
+        logger.error(e.error)
         return -1
 
 
@@ -247,7 +248,7 @@ def get_device_type_id(nb, device_type: str) -> int:
         if ndev_type is not None:
             return int(ndev_type.id)
     except pynetbox.RequestError as e:
-        print(e.error)
+        logger.error(e.error)
         return -1
 
 
@@ -258,7 +259,7 @@ def get_device_role_id(nb, device_role: str) -> int:
         if ndev_role is not None:
             return int(ndev_role.id)
     except pynetbox.RequestError as e:
-        print(e.error)
+        logger.error(e.error)
         return -1
 
 
@@ -273,7 +274,7 @@ def create_netbox_device(nb, device_name: str, site: str, device_type: str, devi
         )
         return result
     except pynetbox.RequestError as e:
-        print(e.error)
+        logger.error(e.error)
         return str(e.error)
 
 
@@ -288,7 +289,7 @@ def delete_netbox_device(nb, device_name: str) -> bool:
         ndev_device.delete()
         return True
     else:
-        print(f"device name {device_name} not found")
+        logger.error(f"device name {device_name} not found")
         return False
 
 
@@ -300,7 +301,7 @@ def get_ip_status(nb, cidr: str) -> str:
         response = nb.ipam.ip_addresses.get(address=cidr)
         return response.status
     except Exception as e:
-        print(f"Exception: {e}")
+        logger.error(f"Exception: {e}")
         return "Unknown"
 
 
@@ -312,7 +313,7 @@ def change_ip_status(nb, cidr: str, status: str) -> bool:
         response.save()
         return True
     except Exception as e:
-        print(f"Exception: {e}")
+        logger.error(f"Exception: {e}")
         return False
 
 
@@ -324,7 +325,7 @@ def change_ip_desc(nb, cidr: str, description: str) -> bool:
         response.save()
         return True
     except Exception as e:
-        print(f"Exception: {e}")
+        logger.error(f"Exception: {e}")
         return False
 
 
@@ -334,7 +335,7 @@ def get_contacts_all(nb):
         contacts = nb.tenancy.contacts.all()
         return contacts
     except Exception as e:
-        print(f"Exception: {e}")
+        logger.error(f"Exception: {e}")
         return False
 
 
@@ -344,7 +345,7 @@ def add_contact(nb, contact_name: str) -> bool:
         nb.tenancy.contacts.create(name=contact_name)
         return True
     except Exception as e:
-        print(f"exception: {e}")
+        logger.error(f"exception: {e}")
         return False
 
 
@@ -369,7 +370,7 @@ def show_all_contacts(nb) -> bool:
             print(f"{contact.name}, {contact.title}, {contact.tags}")
         return True
     except Exception as e:
-        print(f"Exception: {e}")
+        logger.error(f"Exception: {e}")
         return False
     
 
@@ -399,7 +400,7 @@ def get_bgp_community_desc(nb, community: str) -> str:
         rv = nb.plugins.bgp.community.get(value=community)
         return rv['description']
     except Exception as e:
-        print(f"Exception getting {community} from Netbox: {e}")
+        logger.error(f"Exception getting {community} from Netbox: {e}")
         return ""
 
 
@@ -412,7 +413,7 @@ def get_all_bgp_communities(nb) -> dict:
             bgp_community_dict[community] = community.description
         return bgp_community_dict
     except Exception as e:
-        print(f"Exception getting communities from Netbox: {e}")
+        logger.error(f"Exception getting communities from Netbox: {e}")
         return {}
 
 
@@ -421,7 +422,7 @@ def add_bgp_community(nb, community: str, description: str) -> None:
     try:
         nb.plugins.bgp.community.create(value=community, description=description)
     except Exception as e:
-        print(f"Exception adding BGP Community: {e}")
+        logger.error(f"Exception adding BGP Community: {e}")
 
 
 def add_ipv4_ip(nb, cidr: str) -> str:
@@ -469,5 +470,5 @@ def add_ipv6_ip(nb, cidr: str) -> str:
             new_ip = nb.ipam.ip_addresses.create(ip_add_dict)
             return new_ip
     except Exception as e:
-        print(f"Exception adding IPv6: {e}")
+        logger.error(f"Exception adding IPv6: {e}")
         return "Failed"

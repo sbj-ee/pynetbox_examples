@@ -1,6 +1,10 @@
+"""
+Script to find duplicate IP addresses in NetBox.
+"""
 import pynetbox
 from collections import defaultdict
 import urllib3
+from loguru import logger
 
 urllib3.disable_warnings()
 
@@ -13,7 +17,7 @@ NETBOX_URL = getenv("NETBOX_URL")
 API_TOKEN = getenv("NETBOX_TOKEN")
 
 if not NETBOX_URL or not API_TOKEN:
-    print("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
+    logger.error("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
     sys.exit()
 
 # Initialize pynetbox client
@@ -22,6 +26,7 @@ nb.http_session.verify = False
 
 
 def find_duplicate_ips():
+    """Find and log duplicate IP addresses."""
     # Fetch all IP addresses from NetBox
     ip_addresses = nb.ipam.ip_addresses.all()
 
@@ -40,13 +45,13 @@ def find_duplicate_ips():
 
     # Print results
     if duplicates:
-        print("Duplicate IP addresses found:")
+        logger.info("Duplicate IP addresses found:")
         for ip, instances in duplicates.items():
-            print(f"\nIP Address: {ip}")
+            logger.info(f"\nIP Address: {ip}")
             for instance in instances:
-                print(f"  - ID: {instance['id']}, IP: {instance['address']}")
+                logger.info(f"  - ID: {instance['id']}, IP: {instance['address']}")
     else:
-        print("No duplicate IP addresses found.")
+        logger.info("No duplicate IP addresses found.")
 
 if __name__ == "__main__":
     find_duplicate_ips()

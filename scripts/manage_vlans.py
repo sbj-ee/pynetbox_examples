@@ -5,6 +5,7 @@ import sys
 import os
 import argparse
 from os import getenv
+from loguru import logger
 
 # Add sys path to find netbox_utils
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -26,33 +27,33 @@ def main():
     netbox_token = getenv("NETBOX_TOKEN")
 
     if not netbox_url or not netbox_token:
-        print("Please set NETBOX_URL and NETBOX_TOKEN environment variables.")
+        logger.error("Please set NETBOX_URL and NETBOX_TOKEN environment variables.")
         sys.exit(1)
 
     client = NetboxClient(netbox_url, netbox_token)
 
     if args.create_group:
         slug = args.name.lower().replace(" ", "-")
-        print(f"Creating VLAN Group '{args.name}'...")
+        logger.info(f"Creating VLAN Group '{args.name}'...")
         result = client.add_vlan_group(args.name, slug, args.site, args.desc)
         if result:
-            print("Successfully created VLAN Group:")
-            print(result)
+            logger.info("Successfully created VLAN Group:")
+            logger.info(result)
         else:
-            print("Failed to create VLAN Group.")
+            logger.error("Failed to create VLAN Group.")
 
     if args.create_vlan:
         if not args.vid:
-            print("Error: --vid is required when creating a VLAN.")
+            logger.error("Error: --vid is required when creating a VLAN.")
             sys.exit(1)
         
-        print(f"Creating VLAN '{args.name}' (ID: {args.vid})...")
+        logger.info(f"Creating VLAN '{args.name}' (ID: {args.vid})...")
         result = client.add_vlan(args.vid, args.name, args.site, args.group, args.desc)
         if result:
-            print("Successfully created VLAN:")
-            print(result)
+            logger.info("Successfully created VLAN:")
+            logger.info(result)
         else:
-            print("Failed to create VLAN.")
+            logger.error("Failed to create VLAN.")
 
 if __name__ == "__main__":
     main()

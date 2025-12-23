@@ -13,6 +13,7 @@ class BgpSession:
     device: str
     comments: str
     status: str
+    id: int = None
 
 
 if __name__ == "__main__":

@@ -78,7 +78,7 @@ if __name__ == "__main__":
     url = getenv("NETBOX_URL")
 
     if not token or not url:
-        print("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
+        logger.error("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
         sys.exit()
 
     logger.info(f"netbox url: {url}")

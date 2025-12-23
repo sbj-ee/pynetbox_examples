@@ -20,17 +20,17 @@ def check_bgp_session_exists(nb, bgp_session_object: BgpSession) -> bool:
     remote_addr = nb.ipam.ip_addresses.get(address=bgp_session_object.remote_addr)
 
     if remote_addr:
-        print(f"remote_ip is ok: {remote_addr}")
+        logger.info(f"remote_ip is ok: {remote_addr}")
     else:
-        print(f"remote_ip {bgp_session_object.remote_addr} was not found")
+        logger.error(f"remote_ip {bgp_session_object.remote_addr} was not found")
 
     sessions = nb.plugins.bgp.session.all()
     exists_flag: bool = False
 
     # ugly - but the only reliable way that I've found so far
     for session in sessions:
-        print(f"{session.remote_address}")
-        print(f"{bgp_session_object.remote_addr}")
+        logger.debug(f"{session.remote_address}")
+        logger.debug(f"{bgp_session_object.remote_addr}")
         if str(session.remote_address) == str(bgp_session_object.remote_addr):
             exists_flag = True
 
@@ -48,7 +48,7 @@ def main(bgp_session_object: BgpSession):
     url = getenv("NETBOX_URL")
 
     if not token or not url:
-        print("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
+        logger.error("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
         sys.exit()
 
     nb = pynetbox.api(url=url, token=token)
@@ -67,10 +67,10 @@ def main(bgp_session_object: BgpSession):
     session_dict["remote_address"] = remote_addr.id
     session_dict["status"] = bgp_session_object.status
 
-    pprint(session_dict)
+    logger.info(session_dict)
 
     session_exists: bool = check_bgp_session_exists(nb, bgp_session_object)
-    print(f"session_exists: {session_exists}")
+    logger.info(f"session_exists: {session_exists}")
 
     if session_exists:
         sys.exit()
@@ -79,7 +79,7 @@ def main(bgp_session_object: BgpSession):
         response = nb.plugins.bgp.session.create(session_dict)
         return response.status
     except Exception as e:
-        print(f"Exception: {e}")
+        logger.error(f"Exception: {e}")
         return "Unknown"
 
 
