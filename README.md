@@ -14,18 +14,22 @@ This repository contains a collection of Python scripts and utilities for intera
     *   `netbox_interface_types.py`: Mapping of interface types to NetBox slugs.
 
 *   **`scripts/`**: Executable scripts for performing specific tasks.
+    *   `manage_vlans.py`: **[NEW]** CLI tool to create VLANs and VLAN Groups.
     *   `add_ipv4_subnet.py`: Adds an entire IPv4 subnet and its host IPs to NetBox.
     *   `bgp_session_add.py`: Automates the addition of BGP sessions.
     *   `bgp_to_sqlite.py`: Exports BGP session data to a SQLite database.
     *   `change_cisco_interface_names.py`: Renames interfaces on Cisco devices in NetBox.
     *   `find_dupe_ip.py`: Identifies duplicate IP addresses in NetBox.
     *   `get_all_netbox_bgp_sessions.py`: Retrieves and lists all BGP sessions.
-    *   `move_interfaces.py`: Moves interfaces from one device to another.
+    *   `move_interfaces.py`: Moves interfaces from one device to another (via cloning).
     *   `sync_iosxr_interfaces.py`: Synchronizes interfaces from IOS-XR devices.
     *   ... and many more.
 
-*   **`tests/`**: Unit and integration tests.
+*   **`tests/`**: Unit and integration tests using `pytest`.
     *   `test_netbox_client.py`: Unit tests for the `NetboxClient` class (using mocks).
+    *   `test_move_interfaces.py`: Unit and logic tests for interface moving script.
+    *   `test_integration_move_interfaces.py`: Live integration test for interface moving.
+    *   `test_vlans.py`: Tests for VLAN management.
     *   `test_validate_cidr.py`: Unit tests for CIDR validation logic.
     *   `test_ip_info.py`: Tests for IP information display.
     *   `test_ip_add.py`: Integration tests for adding IPs (requires live NetBox).
