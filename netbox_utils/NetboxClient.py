@@ -375,31 +375,6 @@ if __name__ == "__main__":
     nb_client = NetboxClient(netbox_url, netbox_token)
     nb_client.setup_logging()
     print(nb_client.get_pynetbox_version())
-    # ip_addr = "216.170.130.221"
-    # print(f"check if IP exists in netbox: {nb_client.check_if_cidr_exists(ip_addr)}")
-    # print(nb_client.get_cidr_from_ip(ip_addr))
-    # my_device = "FTBGWIIEagg03"
-    # print(f"device {my_device} in netbox is {nb_client.check_if_device_name_exists(my_device)}")
-
-    # my_site_name = "STGRUTFK"
-    # print(f"site {my_site_name} id is {nb_client.get_site_id(my_site_name)}")
-
-    # my_role = "Switch"
-    # print(f"Switch role id is {nb_client.get_role_id(my_role)}")
-
-    # my_device_type = "93180YC-EX"
-    # print(f"Device type {my_device_type} id is {nb_client.get_device_type_id(my_device_type)}")
-
-    # print(nb_client.add_device("STPTWI001", "STPTWI001cen02", "Router", "ASR-920-24SZ-IM"))
-    # print(nb_client.add_interface_to_device("Lo555", "STPTWI001cen02", "virtual", "ISP Management and Source Interface"))
-    # print(nb_client.add_ip_to_interface("STPTWI001cen02", "Lo555", "64.50.230.117/32", "active", "ISP Management and Source Interface"))
-
-    # print(nb_client.add_bgp_session("ABDLWIXA", 4150, "66.66.66.0/30", 4181, "66.66.66.1/30", "MDSNWIGJdst53", "Testing BGP Add", "active"))
-    # my_bgp_sessions = nb_client.get_bgp_sessions_all()
-    # for session in my_bgp_sessions:
-    #     print(f"BGP Session ID: {str(session.id):>6}   Device: {str(session.device):<18}   Remote IP: {str(session.remote_address):>30}  Name: {str(session.name)}")
-
-    # nb_client.print_bgp_session_by_device_and_address("LSANCARCcor52", "206.72.211.104/23")
 
     device_name="VERNNYXAhed11"
     interface_name="1/1/1"

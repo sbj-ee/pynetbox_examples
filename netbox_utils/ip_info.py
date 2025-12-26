@@ -45,11 +45,3 @@ def ip_info(cidr: str) -> None:
         logger.info(f"inet_aton: {int(ipaddress.IPv6Address(ip))}")
         net6 = ipaddress.ip_network(cidr, strict=False)
         logger.info(f"number of addresses: {str(net6.num_addresses)}")
-
-
-if __name__ == "__main__":
-    ip6 = "2001:db8::1/127"
-    ip_info(ip6)
-    print("----")
-    ip4 = "10.10.10.10/31"
-    ip_info(ip4)
