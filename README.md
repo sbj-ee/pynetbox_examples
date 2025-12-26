@@ -107,3 +107,27 @@ pytest tests/test_validate_cidr.py
 2.  Add your changes.
 3.  Ensure all tests pass (`pytest`).
 4.  Add new tests for new functionality.
+
+## Test Descriptions
+
+This project includes a comprehensive test suite covering both unit logic and integration with a live NetBox instance.
+
+### Unit Tests
+These tests use mocks or simple logic verification and do not require a connection to a live NetBox instance.
+
+*   **`tests/test_bgp_session.py`**: Tests the `BgpSession` dataclass to ensure valid instantiation and default values.
+*   **`tests/bgp_session_dict_test.py`**: Validates helper functions that extract site names and CLLI codes for BGP configurations.
+*   **`tests/test_get_clli.py`**: Unit tests for converting device names to CLLI codes and Site names.
+*   **`tests/test_ip_info.py`**: Verifies that the `ip_info` utility correctly parses and logs details about IPv4 and IPv6 addresses.
+*   **`tests/test_move_interfaces.py`**: Tests the logic of the `move_interfaces` script using mocks, ensuring it attempts to clone and delete interfaces correctly.
+*   **`tests/test_netbox_client.py`**: Comprehensive unit tests for the `NetboxClient` wrapper class.
+*   **`tests/test_validate_cidr.py`**: Tests the `is_valid_cidr` function with various valid and invalid input strings.
+*   **`tests/test_vlans.py`**: Mocks NetBox API calls to verify the logic for creating and retrieving VLANs and VLAN Groups.
+
+### Integration Tests
+These tests **REQUIRE** a live NetBox instance and valid `NETBOX_URL` / `NETBOX_TOKEN` environment variables. They create, modify, and delete real data.
+
+*   **`tests/test_contact.py`**: specific tests for creating, modifying, and deleting Contact objects.
+*   **`tests/test_integration_move_interfaces.py`**: End-to-end test that creates sites, devices, and interfaces, then runs the `move_interfaces` script to verify it works against a real API.
+*   **`tests/test_ip_add.py`**: Tests adding IPv4 and IPv6 addresses to NetBox IPAM.
+*   **`tests/test_prefix.py`**: Tests the lifecycle (add, list, delete) of IP Prefixes.
