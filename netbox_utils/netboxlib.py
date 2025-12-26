@@ -239,6 +239,7 @@ def get_site_id(nb, site: str) -> int:
     except pynetbox.RequestError as e:
         logger.error(e.error)
         return -1
+    return -1
 
 
 def get_device_type_id(nb, device_type: str) -> int:
@@ -250,6 +251,7 @@ def get_device_type_id(nb, device_type: str) -> int:
     except pynetbox.RequestError as e:
         logger.error(e.error)
         return -1
+    return -1
 
 
 def get_device_role_id(nb, device_role: str) -> int:
@@ -261,6 +263,7 @@ def get_device_role_id(nb, device_role: str) -> int:
     except pynetbox.RequestError as e:
         logger.error(e.error)
         return -1
+    return -1
 
 
 def create_netbox_device(nb, device_name: str, site: str, device_type: str, device_role:str) -> str:

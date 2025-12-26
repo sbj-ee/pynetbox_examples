@@ -242,9 +242,9 @@ class NetboxClient:
         """Validate if the input is a proper ipv4 or ipv6 address."""
         try:
             # Validate CIDR notation (IP with subnet mask)
-            my_ip_network = ipaddress.ip_network(cidr_string, strict=False)
-            # Extract the IP address with the prefix length
-            return f"{my_ip_network.network_address}/{my_ip_network.prefixlen}"
+            # Use ip_interface to preserve host bits (e.g. 192.168.1.1/24)
+            my_ip_iface = ipaddress.ip_interface(cidr_string)
+            return str(my_ip_iface)
         except ValueError as e:
             raise ValueError(f"Invalid CIDR address: {cidr_string} - {str(e)}")
 
@@ -267,7 +267,7 @@ class NetboxClient:
             }
 
             # Add IP to NetBox
-            ipam = nb.ipam.ip_addresses
+            ipam = self.nb.ipam.ip_addresses
             new_ip = ipam.create(**ip_data)
 
             print(f"Successfully added {validated_cidr} to NetBox")

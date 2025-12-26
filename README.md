@@ -121,6 +121,8 @@ These tests use mocks or simple logic verification and do not require a connecti
 *   **`tests/test_ip_info.py`**: Verifies that the `ip_info` utility correctly parses and logs details about IPv4 and IPv6 addresses.
 *   **`tests/test_move_interfaces.py`**: Tests the logic of the `move_interfaces` script using mocks, ensuring it attempts to clone and delete interfaces correctly.
 *   **`tests/test_netbox_client.py`**: Comprehensive unit tests for the `NetboxClient` wrapper class.
+*   **`tests/test_netbox_manager.py`**: Unit tests for the `NetboxManager` class.
+*   **`tests/test_netboxlib.py`**: Unit tests for the library of utility functions in `netboxlib.py`.
 *   **`tests/test_validate_cidr.py`**: Tests the `is_valid_cidr` function with various valid and invalid input strings.
 *   **`tests/test_vlans.py`**: Mocks NetBox API calls to verify the logic for creating and retrieving VLANs and VLAN Groups.
 
