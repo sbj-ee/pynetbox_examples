@@ -126,3 +126,108 @@ def test_add_ipv4_ip(mock_nb):
     mock_nb.ipam.ip_addresses.create.return_value = "New-IP-Obj"
     assert netboxlib.add_ipv4_ip(mock_nb, "1.1.1.2/32") == "New-IP-Obj"
 
+def test_delete_netbox_device(mock_nb):
+    # Found
+    mock_dev = MagicMock()
+    mock_nb.dcim.devices.get.return_value = mock_dev
+    assert netboxlib.delete_netbox_device(mock_nb, "Dev1") is True
+    mock_dev.delete.assert_called_once()
+    
+    # Not found
+    mock_nb.dcim.devices.get.return_value = None
+    assert netboxlib.delete_netbox_device(mock_nb, "Dev2") is False
+
+def test_change_ip_status(mock_nb):
+    mock_ip = MagicMock()
+    mock_nb.ipam.ip_addresses.get.return_value = mock_ip
+    assert netboxlib.change_ip_status(mock_nb, "1.1.1.1/32", "active") is True
+    assert mock_ip.status == "active"
+    mock_ip.save.assert_called()
+
+def test_change_ip_desc(mock_nb):
+    mock_ip = MagicMock()
+    mock_nb.ipam.ip_addresses.get.return_value = mock_ip
+    assert netboxlib.change_ip_desc(mock_nb, "1.1.1.1/32", "Desc") is True
+    assert mock_ip.description == "Desc"
+    mock_ip.save.assert_called()
+
+def test_check_asn_exists(mock_nb):
+    mock_nb.ipam.asns.get.return_value = MagicMock()
+    assert netboxlib.check_asn_exists(mock_nb, 65000) is True
+    
+    mock_nb.ipam.asns.get.return_value = None
+    assert netboxlib.check_asn_exists(mock_nb, 65999) is False
+
+def test_delete_asn(mock_nb):
+    mock_asn = MagicMock()
+    mock_nb.ipam.asns.get.return_value = mock_asn
+    mock_nb.ipam.asns.delete.return_value = True
+    assert netboxlib.delete_asn(mock_nb, 65000) is True
+    
+    mock_nb.ipam.asns.get.return_value = None
+    assert netboxlib.delete_asn(mock_nb, 65999) is False
+
+def test_add_contact(mock_nb):
+    mock_nb.tenancy.contacts.create.return_value = True
+    assert netboxlib.add_contact(mock_nb, "Contact1") is True
+
+def test_get_all_bgp_communities(mock_nb):
+    c1 = MagicMock()
+    c1.description = "Desc1"
+    # Need to make sure c1 works as a dict key or mock logic appropriately
+    # The code does: bgp_community_dict[community] = community.description
+    # So community object must be hashable. MagicMock is hashable.
+    mock_nb.plugins.bgp.community.all.return_value = [c1]
+    
+    res = netboxlib.get_all_bgp_communities(mock_nb)
+    assert len(res) == 1
+    assert res[c1] == "Desc1"
+
+def test_add_bgp_community(mock_nb):
+    netboxlib.add_bgp_community(mock_nb, "65000:100", "Desc")
+    mock_nb.plugins.bgp.community.create.assert_called_with(value="65000:100", description="Desc")
+
+def test_add_ipv6_ip(mock_nb):
+    # Exists
+    mock_nb.ipam.ip_addresses.get.return_value = MagicMock()
+    assert netboxlib.add_ipv6_ip(mock_nb, "2001:db8::1/64") == "IP Exists"
+    
+    # New
+    mock_nb.ipam.ip_addresses.get.return_value = None
+    mock_nb.ipam.ip_addresses.create.return_value = "New-IPv6"
+    assert netboxlib.add_ipv6_ip(mock_nb, "2001:db8::2/64") == "New-IPv6"
+
+def test_get_ip_device_info(mock_nb):
+    # Setup a complex mock object to hit the print statements
+    mock_res = MagicMock()
+    mock_res.id = 1
+    mock_res.url = "http://url"
+    mock_res.display = "Display"
+    mock_res.family.value = 4
+    mock_res.family.label = "IPv4"
+    mock_res.description = "Desc"
+    mock_res.created = "2023-01-01"
+    mock_res.last_updated = "2023-01-02"
+    mock_res.dns_name = "dns"
+    mock_res.tags = ["tag"]
+    
+    mock_assigned = MagicMock()
+    mock_assigned.url = "http://assigned"
+    mock_assigned.id = 2
+    mock_assigned.display = "AssignedDisplay"
+    
+    mock_device = MagicMock()
+    mock_device.id = 3
+    mock_device.name = "DeviceName"
+    mock_device.url = "http://device"
+    mock_device.display = "DeviceDisplay"
+    
+    # Link them
+    mock_assigned.device = mock_device
+    mock_res.assigned_object = mock_assigned
+    
+    mock_nb.ipam.ip_addresses.get.return_value = mock_res
+    mock_nb.dcim.devices.get.return_value = {"name": "DeviceName"}
+    
+    # Run function
+    assert netboxlib.get_ip_device_info(mock_nb, "1.1.1.1") is True
