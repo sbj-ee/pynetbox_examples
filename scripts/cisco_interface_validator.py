@@ -1,4 +1,5 @@
 import pynetbox
+import os
 
 def is_canonical_cisco_name(name: str) -> bool:
     name = name.lower().replace(" ", "")
@@ -14,10 +15,13 @@ def is_canonical_cisco_name(name: str) -> bool:
             return False
     return any(name.startswith(pat) for pat in canonical_patterns)
 
-# Config
-NETBOX_URL = "https://netbox.yourcompany.com"
-NETBOX_TOKEN = "your-api-token-here"
+# Config from environment variables
+NETBOX_URL = os.getenv("NETBOX_URL")
+NETBOX_TOKEN = os.getenv("NETBOX_TOKEN")
 OFFENDERS_FILE = "offenders.txt"
+
+if not NETBOX_URL or not NETBOX_TOKEN:
+    raise ValueError("NETBOX_URL and NETBOX_TOKEN must be set in environment variables")
 
 nb = pynetbox.api(NETBOX_URL, token=NETBOX_TOKEN)
 devices = nb.dcim.devices.filter(manufacturer="cisco")
