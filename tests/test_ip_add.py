@@ -2,9 +2,9 @@ from os import getenv
 import pynetbox
 import sys
 from time import sleep
-import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from netbox_utils.netboxlib import add_ipv6_ip
 import urllib3
 
@@ -27,7 +27,7 @@ def test_add_ip() -> None:
         try:
             new_ip = nb.ipam.ip_addresses.create(ip_add_dict)
             print(f"Created IP {cidr}")
-            
+
             # Immediately delete after verification to ensure test isolation
             # In a real scenario, you might want separate test/teardown phases
             new_ip.delete()
@@ -36,26 +36,26 @@ def test_add_ip() -> None:
                 print(f"IP {cidr} already exists, attempting cleanup")
                 existing_ip = nb.ipam.ip_addresses.get(address=cidr)
                 if existing_ip:
-                     existing_ip.delete()
+                    existing_ip.delete()
             else:
                 raise e
 
     sleep(5)
 
     cidr = f"66.66.66.0{subnet}"
-    
+
     # Re-create for modification test
     try:
-         nb.ipam.ip_addresses.create(dict(address=cidr, description="temp"))
+        nb.ipam.ip_addresses.create(dict(address=cidr, description="temp"))
     except pynetbox.RequestError:
-         pass # Assume exists if failed
-    
+        pass  # Assume exists if failed
+
     response = nb.ipam.ip_addresses.get(address=cidr)
     if response:
         print(f"change the status for {cidr}")
-        response.description = "more yadda" 
+        response.description = "more yadda"
         response.save()
-        
+
         # Cleanup again
         response.delete()
     else:
@@ -74,7 +74,7 @@ def test_add_ipv6_ip():
     ipv6_ip = "1234:1234:1234::/127"
     rv = add_ipv6_ip(nb, ipv6_ip)
     print(rv)
-    
+
     # Cleanup
     if rv != "Failed" and rv != "IP Exists":
         # It's an IP object

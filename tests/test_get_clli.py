@@ -1,8 +1,10 @@
 import sys
 import os
 import pytest
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from netbox_utils.get_clli_from_device import get_clli_from_device, get_netbox_site_name
+
 
 def test_get_clli_from_device_variations():
     # 13 chars
@@ -16,10 +18,11 @@ def test_get_clli_from_device_variations():
     # Actually looking at code: clli = "" initially.
     assert get_clli_from_device("short") == ""
 
+
 def test_get_netbox_site_name_lookup():
     assert get_netbox_site_name("ATLNGAMQ") == "ATLNGAMQ - Atlanta Digital Reality"
-    
+
+
 def test_get_netbox_site_name_key_error():
     with pytest.raises(KeyError):
         get_netbox_site_name("UNKNOWN")
-    

@@ -7,6 +7,7 @@ from ipaddress import ip_network
 
 from loguru import logger
 
+
 def ip_info(cidr: str) -> None:
     """Provide information about the IP address"""
 

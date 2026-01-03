@@ -1,19 +1,34 @@
 import pynetbox
 import os
 
+
 def is_canonical_cisco_name(name: str) -> bool:
     name = name.lower().replace(" ", "")
     canonical_patterns = [
-        "gigabitethernet", "fastethernet", "tengigabitethernet",
-        "hundredgige", "fortygige", "twentyfivegige", "fivieg",
-        "ethernet", "loopback", "tunnel", "vlan", "port-channel",
-        "nve", "null", "bdi", "dialer", "virtualport-channel"
+        "gigabitethernet",
+        "fastethernet",
+        "tengigabitethernet",
+        "hundredgige",
+        "fortygige",
+        "twentyfivegige",
+        "fivieg",
+        "ethernet",
+        "loopback",
+        "tunnel",
+        "vlan",
+        "port-channel",
+        "nve",
+        "null",
+        "bdi",
+        "dialer",
+        "virtualport-channel",
     ]
     abbreviations = ["gi", "fa", "te", "tw", "hu", "fo", "et", "po", "vl"]
     for abbr in abbreviations:
-        if name.startswith(abbr) and any(c.isdigit() for c in name[len(abbr):]):
+        if name.startswith(abbr) and any(c.isdigit() for c in name[len(abbr) :]):
             return False
     return any(name.startswith(pat) for pat in canonical_patterns)
+
 
 # Config from environment variables
 NETBOX_URL = os.getenv("NETBOX_URL")

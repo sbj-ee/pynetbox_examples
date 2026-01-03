@@ -1,7 +1,6 @@
 from os import getenv
 import pynetbox
 import sys
-from pprint import pprint
 from time import sleep
 import urllib3
 
@@ -22,7 +21,7 @@ def test_add_contact() -> None:
     contact_name: str = "Bob Dole"
 
     rv = nb.tenancy.contacts.create(name=contact_name)
-    
+
     if rv:
         # Cleanup
         rv.delete()
@@ -45,16 +44,16 @@ def test_modify_contact():
     nb.http_session.verify = False
 
     contact_name: str = "Bob Dole"
-    
+
     # Setup - ensure contact exists
     contact = nb.tenancy.contacts.create(name=contact_name)
     if not contact:
-         # Try getting it if creating fails (might already exist)
-         contact = nb.tenancy.contacts.get(name=contact_name)
+        # Try getting it if creating fails (might already exist)
+        contact = nb.tenancy.contacts.get(name=contact_name)
 
     contact.title = "Miner yabba dabba do"
     contact.save()
-    
+
     # Cleanup
     if contact:
         contact.delete()
@@ -72,12 +71,12 @@ def test_delete_contact():
     nb.http_session.verify = False
 
     contact_name: str = "Bob Dole"
-    
+
     # Setup - ensure contact exists
     try:
         nb.tenancy.contacts.create(name=contact_name)
     except:
-        pass # If it exists that is fine too
+        pass  # If it exists that is fine too
 
     contact_ref = nb.tenancy.contacts.get(name=contact_name)
     # The list wrapper [contact_ref] logic seems odd for simple delete, usually contact_ref.delete()

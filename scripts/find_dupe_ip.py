@@ -1,6 +1,7 @@
 """
 Script to find duplicate IP addresses in NetBox.
 """
+
 import pynetbox
 from collections import defaultdict
 import urllib3
@@ -35,10 +36,12 @@ def find_duplicate_ips():
 
     # Iterate through IP addresses and group by address
     for ip in ip_addresses:
-        ip_counts[str(ip.address)].append({
-            'id': ip.id,
-            'address': str(ip.address) if ip.address else 'None',
-        })
+        ip_counts[str(ip.address)].append(
+            {
+                "id": ip.id,
+                "address": str(ip.address) if ip.address else "None",
+            }
+        )
 
     # Identify duplicates (IPs with more than one occurrence)
     duplicates = {ip: details for ip, details in ip_counts.items() if len(details) > 1}
@@ -52,6 +55,7 @@ def find_duplicate_ips():
                 logger.info(f"  - ID: {instance['id']}, IP: {instance['address']}")
     else:
         logger.info("No duplicate IP addresses found.")
+
 
 if __name__ == "__main__":
     find_duplicate_ips()

@@ -10,8 +10,10 @@ NETBOX_TOKEN = os.getenv("NETBOX_TOKEN")
 nb = pynetbox.api(NETBOX_URL, token=NETBOX_TOKEN)
 nb.http_session.verify = False
 
+
 def get_maintenance(obj):
     return obj.custom_fields.get("Maintenance", False) if obj.custom_fields else False
+
 
 # Examples:
 devices = nb.dcim.devices.all()
@@ -24,4 +26,6 @@ for circuit in circuits:
 
 interfaces = nb.dcim.interfaces.all()
 for iface in interfaces:
-    print(f"Interface {iface.device.name}/{iface.name}: Maintenance = {get_maintenance(iface)}")
+    print(
+        f"Interface {iface.device.name}/{iface.name}: Maintenance = {get_maintenance(iface)}"
+    )

@@ -1,18 +1,13 @@
-
-import pynetbox
 import sys
-from pprint import pprint
-from time import sleep
 import urllib3
 
 urllib3.disable_warnings()
-import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from netbox_utils.netboxlib import connect_netbox, add_ip_prefix, get_all_ip_prefixes
 from netbox_utils.netboxlib import show_all_ip_prefixes, delete_ip_prefix
-from pprint import pprint
 
 
 def test_add_ip_prefix():
@@ -27,7 +22,7 @@ def test_add_ip_prefix():
     prefix_dict = {"prefix": prefix_str}
     result = add_ip_prefix(nb, prefix=prefix_dict)
     assert result is True
-    
+
     # Cleanup
     delete_ip_prefix(nb, prefix_str)
 
@@ -36,7 +31,7 @@ def test_delete_ip_prefix():
     # FIX - this is not deleting
     nb = connect_netbox()
     prefix = "192.168.7.0/24"
-    
+
     # Ensure it exists first so we can test deleting it
     prefix_dict = {"prefix": prefix}
     add_ip_prefix(nb, prefix=prefix_dict)

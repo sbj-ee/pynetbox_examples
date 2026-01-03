@@ -1,7 +1,8 @@
 from pprint import pprint
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from netbox_utils.get_clli_from_device import get_clli_from_device, get_netbox_site_name
 
 
@@ -17,12 +18,12 @@ def test_bgp_session_dict():
     bgp_name = "Yadda"
 
     bgp_sess = {
-        'site': site,
-        'device': device,
-        'local_address': local_address,
-        'local_as': local_as,
-        'remote_address': remote_address,
-        'remote_as': remote_as
+        "site": site,
+        "device": device,
+        "local_address": local_address,
+        "local_as": local_as,
+        "remote_address": remote_address,
+        "remote_as": remote_as,
     }
 
     # this is what I'm testing - need a better key
@@ -35,6 +36,9 @@ def test_bgp_session_dict():
 
     # I'll pull the info from the router and create the key
     my_router_data_key = f"{remote_address}_{local_address}"
-    
+
     assert bgp_sess_dict[my_router_data_key] == bgp_sess
-    assert bgp_sess_dict[my_router_data_key]['site'] == "ATLNGAMQ - Atlanta Digital Reality"
+    assert (
+        bgp_sess_dict[my_router_data_key]["site"]
+        == "ATLNGAMQ - Atlanta Digital Reality"
+    )

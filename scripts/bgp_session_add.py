@@ -8,11 +8,10 @@ import sys
 import urllib3
 
 urllib3.disable_warnings()
-import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from netbox_utils.BgpSession import BgpSession
-from pprint import pprint
 
 
 def check_bgp_session_exists(nb, bgp_session_object: BgpSession) -> bool:

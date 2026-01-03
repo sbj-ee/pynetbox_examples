@@ -1,0 +1,10 @@
+[lint]
+# Allow some common patterns in network automation scripts
+ignore = [
+    "E402",   # Module level import not at top of file (common for urllib3.disable_warnings())
+    "F841",   # Local variable assigned but never used (common in example/test code)
+]
+
+[lint.per-file-ignores]
+# Tests can have bare excepts for cleanup
+"tests/*" = ["E722"]

@@ -11,9 +11,9 @@ import urllib3
 from os import getenv
 from loguru import logger
 import pynetbox
-import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from netbox_utils.netboxlib import add_ipv4_ip
 
 urllib3.disable_warnings()
@@ -30,7 +30,7 @@ def main(cidr: str):
         sys.exit()
 
     if int(nm) <= 22:
-        proceed: str = input(f"A large subnet - Are you sure? Y or N: ")
+        proceed: str = input("A large subnet - Are you sure? Y or N: ")
         if proceed.lower() != "y":
             logger.info("Exiting - proceed check was {proceed}")
             sys.exit()
