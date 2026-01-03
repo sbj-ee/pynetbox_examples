@@ -1,20 +1,30 @@
 import re
+from os import getenv
+from getpass import getpass
 from netmiko import ConnectHandler
 from pynetbox import api
 from datetime import datetime
 
-# Configuration
-NETBOX_URL = "http://netbox.example.com"
-NETBOX_TOKEN = "your-netbox-api-token"
+# Configuration from environment variables
+NETBOX_URL = getenv("NETBOX_URL")
+NETBOX_TOKEN = getenv("NETBOX_TOKEN")
 
-# Router inventory
+if not NETBOX_URL or not NETBOX_TOKEN:
+    raise ValueError("NETBOX_URL and NETBOX_TOKEN must be set in environment variables")
+
+# Router inventory - populate credentials at runtime
+# Set ROUTER_USERNAME env var or will prompt for credentials
+ROUTER_USERNAME = getenv("ROUTER_USERNAME") or input("Router username: ")
+ROUTER_PASSWORD = getenv("ROUTER_PASSWORD") or getpass("Router password: ")
+ROUTER_SECRET = getenv("ROUTER_SECRET") or getpass("Router enable secret: ")
+
 IOSXR_ROUTERS = [
     {
         "device_type": "cisco_xr",
         "host": "iosxr1.example.com",
-        "username": "admin",
-        "password": "password",
-        "secret": "secret"
+        "username": ROUTER_USERNAME,
+        "password": ROUTER_PASSWORD,
+        "secret": ROUTER_SECRET
     },
     # Add more IOSXR routers here
 ]
@@ -23,9 +33,9 @@ SROS_ROUTERS = [
     {
         "device_type": "nokia_sros",
         "host": "sros1.example.com",
-        "username": "admin",
-        "password": "password",
-        "secret": "secret"
+        "username": ROUTER_USERNAME,
+        "password": ROUTER_PASSWORD,
+        "secret": ROUTER_SECRET
     },
     # Add more SROS routers here
 ]

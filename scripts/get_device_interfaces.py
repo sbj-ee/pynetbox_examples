@@ -10,9 +10,12 @@ from loguru import logger
 load_dotenv()
 
 # NetBox connection details
-NETBOX_URL = os.getenv("NETBOX_URL", "http://localhost:8000")
-NETBOX_TOKEN = os.getenv("NETBOX_TOKEN", "YOUR_TOKEN_HERE")
+NETBOX_URL = os.getenv("NETBOX_URL")
+NETBOX_TOKEN = os.getenv("NETBOX_TOKEN")
 DEVICE_NAME = "your-device-name"  # Replace with your device name
+
+if not NETBOX_URL or not NETBOX_TOKEN:
+    raise ValueError("NETBOX_URL and NETBOX_TOKEN must be set in environment variables")
 
 def get_device_interfaces():
     """Get all interfaces for a device and log their details."""
