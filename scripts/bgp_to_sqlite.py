@@ -89,12 +89,6 @@ def main():
             "username": config["username"],
             "password": config["password"],
         },
-        # {
-        #    "device_type": "nokia_sros",
-        #    "host": "192.168.1.2",
-        #    "username": "admin",
-        #    "password": "password",
-        # }
     ]
 
     conn = create_database()
