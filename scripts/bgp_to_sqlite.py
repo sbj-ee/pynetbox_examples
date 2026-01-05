@@ -1,10 +1,14 @@
-from dotenv import dotenv_values
 import argparse
 import sqlite3
 import sys
+import os
 import re
 from netmiko import ConnectHandler
 from datetime import datetime
+
+# Add parent directory to path for credentials module
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from credentials import get_credentials
 
 
 def create_database():
@@ -69,25 +73,16 @@ def main():
     )
     args = parser.parse_args()
 
-    if args.env == "prod" or args.env == "production":
-        env_file = "/home/usrsbj/.sbj_creds/ipno.env"
-        environment = "production"
-    elif args.env == "lab":
-        env_file = "/home/usrsbj/.sbj_creds/ipno.lab.env"
-        environment = "lab"
-    else:
-        print(f"unknown environment: {str(args.env)}")
-        sys.exit()
-
-    config = dotenv_values(env_file)
+    # Get credentials from environment variables
+    username, password = get_credentials("CISCO", args.env)
 
     # Router configuration
     routers = [
         {
             "device_type": "cisco_ios",
             "host": args.router,
-            "username": config["username"],
-            "password": config["password"],
+            "username": username,
+            "password": password,
         },
     ]
 

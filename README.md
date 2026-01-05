@@ -62,11 +62,29 @@ This repository contains a collection of Python scripts and utilities for intera
 
 ## Configuration
 
-The scripts use environment variables for authentication. You must export the following variables in your shell before running any script that connects to NetBox:
+The scripts use environment variables for authentication. You must export the following variables in your shell before running any script:
 
+### NetBox Credentials
 ```bash
 export NETBOX_URL="https://your-netbox-url.com"
 export NETBOX_TOKEN="your-api-token"
+```
+
+### Device Credentials (for scripts that connect to routers)
+```bash
+# Production environment
+export CISCO_PROD_USERNAME="your-username"
+export CISCO_PROD_PASSWORD="your-password"
+
+# Lab environment (optional)
+export CISCO_LAB_USERNAME="your-lab-username"
+export CISCO_LAB_PASSWORD="your-lab-password"
+```
+
+Scripts that connect to devices accept an `-e/--env` flag to select the environment (defaults to `prod`):
+```bash
+python scripts/bgp_to_sqlite.py -r router.example.com -e prod
+python scripts/sync_iosxr_interfaces.py -r router.example.com -e lab
 ```
 
 > **Note**: These scripts use `ssl_verify=False` by default for ease of use in lab environments with self-signed certificates.

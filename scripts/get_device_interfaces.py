@@ -4,13 +4,9 @@ Script to get interfaces for a device from NetBox.
 
 import pynetbox
 import os
-from dotenv import load_dotenv
 from loguru import logger
 
-# Load environment variables
-load_dotenv()
-
-# NetBox connection details
+# NetBox connection details (from environment variables)
 NETBOX_URL = os.getenv("NETBOX_URL")
 NETBOX_TOKEN = os.getenv("NETBOX_TOKEN")
 DEVICE_NAME = "your-device-name"  # Replace with your device name

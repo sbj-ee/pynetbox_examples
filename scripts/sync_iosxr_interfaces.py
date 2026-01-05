@@ -1,20 +1,20 @@
 import warnings
 import argparse
 import sys
-from dotenv import dotenv_values
+import os
 from netmiko import ConnectHandler
 import pynetbox
 import re
 from typing import Dict, List
 import logging
 
+# Add parent directory to path for credentials module
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from credentials import get_credentials
 
 # NetBox connection details
-from os import getenv
-
-# NetBox connection details
-NETBOX_URL = getenv("NETBOX_URL")
-NETBOX_TOKEN = getenv("NETBOX_TOKEN")
+NETBOX_URL = os.getenv("NETBOX_URL")
+NETBOX_TOKEN = os.getenv("NETBOX_TOKEN")
 
 if not NETBOX_URL or not NETBOX_TOKEN:
     print("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
@@ -177,23 +177,12 @@ def main():
     )
     args = parser.parse_args()
 
-    if args.env == "prod" or args.env == "production":
-        env_file = "/home/usrsbj/.sbj_creds/ipno.env"
-        environment = "production"
-    elif args.env == "lab":
-        env_file = "/home/usrsbj/.sbj_creds/ipno.lab.env"
-        environment = "lab"
-    else:
-        print(f"unknown environment: {str(args.env)}")
-        sys.exit()
-
-    config = dotenv_values(env_file)
+    # Get credentials from environment variables
+    username, password = get_credentials("CISCO", args.env)
     warnings.filterwarnings("ignore")
 
     # Configuration
     router_ip = args.router  # Replace with your router IP
-    username = config["username"]  # Replace with your username
-    password = config["password"]  # Replace with your password
     netbox_url = NETBOX_URL  # Replace with your NetBox URL
     netbox_token = NETBOX_TOKEN  # Replace with your NetBox API token
     device_name = ROUTER_NAME  # Replace with your device name in NetBox
