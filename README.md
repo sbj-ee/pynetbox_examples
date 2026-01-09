@@ -23,7 +23,13 @@ This repository contains a collection of Python scripts and utilities for intera
     *   `get_all_netbox_bgp_sessions.py`: Retrieves and lists all BGP sessions.
     *   `move_interfaces.py`: Moves interfaces from one device to another (via cloning).
     *   `sync_iosxr_interfaces.py`: Synchronizes interfaces from IOS-XR devices.
-    *   ... and many more.
+    *   `cisco_interface_validator.py`: Validates Cisco interface naming.
+    *   `edit_bgp_session.py`: Modify existing BGP sessions.
+    *   `get_device_interfaces.py`: List all interfaces on a device.
+    *   `get_interface_id.py`: Retrieve interface IDs by name.
+    *   `get_maintenance_count.py`: Count devices in maintenance mode.
+    *   `get_maintenance_value.py`: Get maintenance status values.
+    *   And additional utility scripts (22 total).
 
 *   **`tests/`**: Unit and integration tests using `pytest`.
     *   `test_netbox_client.py`: Unit tests for the `NetboxClient` class (using mocks).
@@ -37,7 +43,7 @@ This repository contains a collection of Python scripts and utilities for intera
 
 ## Prerequisites
 
-*   Python 3.13+
+*   Python 3.10+
 *   A NetBox instance (v3.5+ recommended)
 *   `pip` for installing dependencies
 
@@ -57,7 +63,10 @@ This repository contains a collection of Python scripts and utilities for intera
 
 3.  Install dependencies:
     ```bash
-    pip install pynetbox pytest loguru netmiko tqdm tenacity requests ipaddress pytest-cov
+    pip install -r requirements.txt
+
+    # For development (includes test dependencies)
+    pip install -r requirements-dev.txt
     ```
 
 ## Configuration
