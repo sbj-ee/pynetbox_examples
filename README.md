@@ -79,6 +79,10 @@ export NETBOX_URL="https://your-netbox-url.com"
 export NETBOX_TOKEN="your-api-token"
 ```
 
+> **Important: Use HTTPS for `NETBOX_URL`**
+>
+> If your NetBox instance redirects HTTP to HTTPS, you **must** use `https://` in your `NETBOX_URL`. When HTTP requests are redirected to HTTPS, POST/PUT/DELETE operations are converted to GET requests (standard HTTP redirect behavior), causing write operations to silently fail. This affects creating, updating, and deleting objects via the API.
+
 ### Device Credentials (for scripts that connect to routers)
 ```bash
 # Production environment
