@@ -1,100 +1,107 @@
+"""Tests for NetBox contact operations.
+
+Note: NetBox may redirect HTTP to HTTPS, which converts POST to GET.
+Ensure NETBOX_URL uses https:// for write operations to work.
+"""
 from os import getenv
 import pynetbox
 import sys
-from time import sleep
+import pytest
 import urllib3
+import uuid
 
 urllib3.disable_warnings()
 
 
-def test_add_contact() -> None:
+def get_netbox_connection():
+    """Get NetBox API connection."""
     token = getenv("NETBOX_TOKEN")
     url = getenv("NETBOX_URL")
 
     if not token or not url:
-        print("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
-        sys.exit()
+        pytest.skip("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
 
     nb = pynetbox.api(url=url, token=token)
     nb.http_session.verify = False
+    return nb
 
-    contact_name: str = "Bob Dole"
 
-    rv = nb.tenancy.contacts.create(name=contact_name)
+def test_add_contact() -> None:
+    """Test creating a contact in NetBox."""
+    nb = get_netbox_connection()
 
-    if rv:
-        # Cleanup
-        rv.delete()
+    # Use unique name to avoid conflicts
+    contact_name = f"Test_Contact_{uuid.uuid4().hex[:8]}"
 
-    if rv:
-        assert True
-    else:
-        assert False
+    try:
+        # Create contact
+        nb.tenancy.contacts.create(name=contact_name)
+
+        # Verify by fetching it back (handles HTTP redirect issue)
+        created = nb.tenancy.contacts.get(name=contact_name)
+        assert created is not None, f"Contact '{contact_name}' was not created"
+        assert created.name == contact_name
+
+    finally:
+        # Cleanup - always try to delete
+        contact = nb.tenancy.contacts.get(name=contact_name)
+        if contact:
+            contact.delete()
 
 
 def test_modify_contact():
-    token = getenv("NETBOX_TOKEN")
-    url = getenv("NETBOX_URL")
+    """Test modifying a contact in NetBox."""
+    nb = get_netbox_connection()
 
-    if not token or not url:
-        print("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
-        sys.exit()
+    contact_name = f"Test_Contact_{uuid.uuid4().hex[:8]}"
+    new_title = "Test Title Modified"
 
-    nb = pynetbox.api(url=url, token=token)
-    nb.http_session.verify = False
+    try:
+        # Setup - create contact
+        nb.tenancy.contacts.create(name=contact_name)
 
-    contact_name: str = "Bob Dole"
-
-    # Setup - ensure contact exists
-    contact = nb.tenancy.contacts.create(name=contact_name)
-    if not contact:
-        # Try getting it if creating fails (might already exist)
+        # Fetch the created contact
         contact = nb.tenancy.contacts.get(name=contact_name)
+        assert contact is not None, f"Contact '{contact_name}' was not created"
 
-    contact.title = "Miner yabba dabba do"
-    contact.save()
+        # Modify the contact
+        contact.title = new_title
+        contact.save()
 
-    # Cleanup
-    if contact:
-        contact.delete()
+        # Verify modification
+        updated = nb.tenancy.contacts.get(name=contact_name)
+        assert updated.title == new_title
+
+    finally:
+        # Cleanup
+        contact = nb.tenancy.contacts.get(name=contact_name)
+        if contact:
+            contact.delete()
 
 
 def test_delete_contact():
-    token = getenv("NETBOX_TOKEN")
-    url = getenv("NETBOX_URL")
+    """Test deleting a contact from NetBox."""
+    nb = get_netbox_connection()
 
-    if not token or not url:
-        print("NETBOX_TOKEN or NETBOX_URL missing from environment variables")
-        sys.exit()
+    contact_name = f"Test_Contact_{uuid.uuid4().hex[:8]}"
 
-    nb = pynetbox.api(url=url, token=token)
-    nb.http_session.verify = False
+    # Setup - create contact
+    nb.tenancy.contacts.create(name=contact_name)
 
-    contact_name: str = "Bob Dole"
+    # Verify it exists
+    contact = nb.tenancy.contacts.get(name=contact_name)
+    assert contact is not None, f"Contact '{contact_name}' was not created"
 
-    # Setup - ensure contact exists
-    try:
-        nb.tenancy.contacts.create(name=contact_name)
-    except:
-        pass  # If it exists that is fine too
+    # Delete the contact
+    result = contact.delete()
+    assert result is True
 
-    contact_ref = nb.tenancy.contacts.get(name=contact_name)
-    # The list wrapper [contact_ref] logic seems odd for simple delete, usually contact_ref.delete()
-    # But adhering to original logic structure for now, just ensuring it exists.
-    if contact_ref:
-        rv = contact_ref.delete()
-    else:
-        rv = False
-
-    if rv:
-        assert True
-    else:
-        assert False
+    # Verify deletion
+    deleted = nb.tenancy.contacts.get(name=contact_name)
+    assert deleted is None, f"Contact '{contact_name}' was not deleted"
 
 
 if __name__ == "__main__":
     test_add_contact()
-    sleep(10)
     test_modify_contact()
-    sleep(10)
     test_delete_contact()
