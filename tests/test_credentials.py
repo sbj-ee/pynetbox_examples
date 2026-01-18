@@ -16,40 +16,17 @@ from credentials import (
 class TestGetCredentials:
     """Test cases for get_credentials function."""
 
-    @patch.dict(os.environ, {"CISCO_PROD_USERNAME": "testuser", "CISCO_PROD_PASSWORD": "testpass"})  # pragma: allowlist secret
+    @patch.dict(os.environ, {"ROUTER_USERNAME": "testuser", "ROUTER_PASSWORD": "testpass"})  # pragma: allowlist secret
     def test_get_credentials_success(self):
         """Test successful credential retrieval."""
-        username, password = get_credentials("CISCO", "prod")
+        username, password = get_credentials()
         assert username == "testuser"
         assert password == "testpass"  # pragma: allowlist secret
 
-    @patch.dict(os.environ, {"CISCO_LAB_USERNAME": "labuser", "CISCO_LAB_PASSWORD": "labpass"})  # pragma: allowlist secret
-    def test_get_credentials_lab_environment(self):
-        """Test credential retrieval for lab environment."""
-        username, password = get_credentials("CISCO", "lab")
-        assert username == "labuser"
-        assert password == "labpass"  # pragma: allowlist secret
-
-    @patch.dict(os.environ, {"NOKIA_PROD_USERNAME": "nokiauser", "NOKIA_PROD_PASSWORD": "nokiapass"}, clear=True)  # pragma: allowlist secret
-    def test_get_credentials_different_service(self):
-        """Test credential retrieval for different service."""
-        username, password = get_credentials("NOKIA", "prod")
-        assert username == "nokiauser"
-        assert password == "nokiapass"  # pragma: allowlist secret
-
-    @patch.dict(os.environ, {"cisco_prod_username": "lowercase", "cisco_prod_password": "lowerpass"}, clear=True)  # pragma: allowlist secret
-    def test_get_credentials_case_insensitive_handling(self):
-        """Test that credentials are retrieved regardless of case in env var names."""
-        # Note: os.getenv is case-sensitive on most systems, so we test uppercase conversion
-        with patch.dict(os.environ, {"CISCO_PROD_USERNAME": "lowercase", "CISCO_PROD_PASSWORD": "lowerpass"}, clear=True):  # pragma: allowlist secret
-            username, password = get_credentials("cisco", "prod")
-            assert username == "lowercase"
-            assert password == "lowerpass"  # pragma: allowlist secret
-
-    @patch.dict(os.environ, {"CISCO_PROD_USERNAME": "  testuser  ", "CISCO_PROD_PASSWORD": "  testpass  "}, clear=True)  # pragma: allowlist secret
+    @patch.dict(os.environ, {"ROUTER_USERNAME": "  testuser  ", "ROUTER_PASSWORD": "  testpass  "}, clear=True)  # pragma: allowlist secret
     def test_get_credentials_strips_whitespace(self):
         """Test that credentials are stripped of whitespace."""
-        username, password = get_credentials("CISCO", "prod")
+        username, password = get_credentials()
         assert username == "testuser"
         assert password == "testpass"  # pragma: allowlist secret
 
@@ -57,81 +34,39 @@ class TestGetCredentials:
     def test_get_credentials_missing_username(self):
         """Test MissingCredentialsError when username is missing."""
         with pytest.raises(MissingCredentialsError) as exc_info:
-            get_credentials("CISCO", "prod")
-        assert "CISCO_PROD_USERNAME" in str(exc_info.value)
-        assert "CISCO_PROD_PASSWORD" in str(exc_info.value)
-        assert "CISCO_PROD_USERNAME" in exc_info.value.env_vars
+            get_credentials()
+        assert "ROUTER_USERNAME" in str(exc_info.value)
+        assert "ROUTER_PASSWORD" in str(exc_info.value)
+        assert "ROUTER_USERNAME" in exc_info.value.env_vars
 
-    @patch.dict(os.environ, {"CISCO_PROD_USERNAME": "testuser"}, clear=True)
+    @patch.dict(os.environ, {"ROUTER_USERNAME": "testuser"}, clear=True)
     def test_get_credentials_missing_password(self):
         """Test MissingCredentialsError when password is missing."""
         with pytest.raises(MissingCredentialsError) as exc_info:
-            get_credentials("CISCO", "prod")
-        assert "CISCO_PROD_PASSWORD" in str(exc_info.value)
-        assert "CISCO_PROD_PASSWORD" in exc_info.value.env_vars
+            get_credentials()
+        assert "ROUTER_PASSWORD" in str(exc_info.value)
+        assert "ROUTER_PASSWORD" in exc_info.value.env_vars
 
-    @patch.dict(os.environ, {"CISCO_PROD_USERNAME": "", "CISCO_PROD_PASSWORD": "testpass"}, clear=True)  # pragma: allowlist secret
+    @patch.dict(os.environ, {"ROUTER_USERNAME": "", "ROUTER_PASSWORD": "testpass"}, clear=True)  # pragma: allowlist secret
     def test_get_credentials_empty_username(self):
         """Test MissingCredentialsError when username is empty string."""
         with pytest.raises(MissingCredentialsError) as exc_info:
-            get_credentials("CISCO", "prod")
-        assert "CISCO_PROD_USERNAME" in str(exc_info.value)
+            get_credentials()
+        assert "ROUTER_USERNAME" in str(exc_info.value)
 
-    @patch.dict(os.environ, {"CISCO_PROD_USERNAME": "testuser", "CISCO_PROD_PASSWORD": ""}, clear=True)  # pragma: allowlist secret
+    @patch.dict(os.environ, {"ROUTER_USERNAME": "testuser", "ROUTER_PASSWORD": ""}, clear=True)  # pragma: allowlist secret
     def test_get_credentials_empty_password(self):
         """Test MissingCredentialsError when password is empty string."""
         with pytest.raises(MissingCredentialsError) as exc_info:
-            get_credentials("CISCO", "prod")
-        assert "CISCO_PROD_PASSWORD" in str(exc_info.value)
+            get_credentials()
+        assert "ROUTER_PASSWORD" in str(exc_info.value)
 
-    @patch.dict(os.environ, {"CISCO_PROD_USERNAME": "   ", "CISCO_PROD_PASSWORD": "testpass"}, clear=True)  # pragma: allowlist secret
+    @patch.dict(os.environ, {"ROUTER_USERNAME": "   ", "ROUTER_PASSWORD": "testpass"}, clear=True)  # pragma: allowlist secret
     def test_get_credentials_whitespace_only_username(self):
         """Test MissingCredentialsError when username is only whitespace."""
         with pytest.raises(MissingCredentialsError) as exc_info:
-            get_credentials("CISCO", "prod")
-        assert "CISCO_PROD_USERNAME" in str(exc_info.value)
-
-    def test_get_credentials_empty_service(self):
-        """Test ValueError when service parameter is empty."""
-        with pytest.raises(ValueError, match="service parameter must be a non-empty string"):
-            get_credentials("", "prod")
-
-    def test_get_credentials_none_service(self):
-        """Test ValueError when service parameter is None."""
-        with pytest.raises(ValueError, match="service parameter must be a non-empty string"):
-            get_credentials(None, "prod")  # type: ignore
-
-    def test_get_credentials_whitespace_only_service(self):
-        """Test ValueError when service parameter is only whitespace."""
-        with pytest.raises(ValueError, match="service parameter must be a non-empty string"):
-            get_credentials("   ", "prod")
-
-    def test_get_credentials_empty_environment(self):
-        """Test ValueError when environment parameter is empty."""
-        with pytest.raises(ValueError, match="environment parameter must be a non-empty string"):
-            get_credentials("CISCO", "")
-
-    def test_get_credentials_none_environment(self):
-        """Test ValueError when environment parameter is None."""
-        with pytest.raises(ValueError, match="environment parameter must be a non-empty string"):
-            get_credentials("CISCO", None)  # type: ignore
-
-    def test_get_credentials_default_environment(self):
-        """Test that default environment is 'prod'."""
-        with patch.dict(os.environ, {"CISCO_PROD_USERNAME": "user", "CISCO_PROD_PASSWORD": "pass"}, clear=True):  # pragma: allowlist secret
-            username, password = get_credentials("CISCO")
-            assert username == "user"
-            assert password == "pass"  # pragma: allowlist secret
-
-    def test_get_credentials_non_string_service(self):
-        """Test ValueError when service parameter is not a string."""
-        with pytest.raises(ValueError, match="service parameter must be a non-empty string"):
-            get_credentials(123, "prod")  # type: ignore
-
-    def test_get_credentials_non_string_environment(self):
-        """Test ValueError when environment parameter is not a string."""
-        with pytest.raises(ValueError, match="environment parameter must be a non-empty string"):
-            get_credentials("CISCO", 123)  # type: ignore
+            get_credentials()
+        assert "ROUTER_USERNAME" in str(exc_info.value)
 
 
 class TestGetNetboxCredentials:

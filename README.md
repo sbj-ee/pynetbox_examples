@@ -85,19 +85,14 @@ export NETBOX_TOKEN="your-api-token"
 
 ### Device Credentials (for scripts that connect to routers)
 ```bash
-# Production environment
-export CISCO_PROD_USERNAME="your-username"
-export CISCO_PROD_PASSWORD="your-password"
-
-# Lab environment (optional)
-export CISCO_LAB_USERNAME="your-lab-username"
-export CISCO_LAB_PASSWORD="your-lab-password"
+export ROUTER_USERNAME="your-username"
+export ROUTER_PASSWORD="your-password"
 ```
 
-Scripts that connect to devices accept an `-e/--env` flag to select the environment (defaults to `prod`):
+Example usage:
 ```bash
-python scripts/bgp_to_sqlite.py -r router.example.com -e prod
-python scripts/sync_iosxr_interfaces.py -r router.example.com -e lab
+python scripts/bgp_to_sqlite.py -r router.example.com
+python scripts/sync_iosxr_interfaces.py -r router.example.com
 ```
 
 > **Note**: These scripts use `ssl_verify=False` by default for ease of use in lab environments with self-signed certificates.

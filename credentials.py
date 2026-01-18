@@ -24,34 +24,20 @@ class InvalidURLError(Exception):
     pass
 
 
-def get_credentials(service: str, environment: str = "prod") -> tuple[str, str]:
+def get_credentials() -> tuple[str, str]:
     """Get username/password from environment variables.
-
-    Args:
-        service: Service prefix (CISCO, NOKIA, VELOCIX, etc.)
-        environment: Environment name (prod, lab)
 
     Returns:
         Tuple of (username, password)
 
     Raises:
         MissingCredentialsError: If required environment variables are not set or empty
-        ValueError: If service or environment parameters are empty or invalid
 
-    Environment variables format:
-        {SERVICE}_{ENV}_USERNAME, {SERVICE}_{ENV}_PASSWORD
-        Example: CISCO_PROD_USERNAME, CISCO_PROD_PASSWORD
+    Environment variables:
+        ROUTER_USERNAME, ROUTER_PASSWORD
     """
-    # Validate input parameters
-    if not isinstance(service, str) or not service.strip():
-        raise ValueError("service parameter must be a non-empty string")
-    if not isinstance(environment, str) or not environment.strip():
-        raise ValueError("environment parameter must be a non-empty string")
-
-    env = environment.upper().strip()
-    svc = service.upper().strip()
-    username_var = f"{svc}_{env}_USERNAME"
-    password_var = f"{svc}_{env}_PASSWORD"
+    username_var = "ROUTER_USERNAME"
+    password_var = "ROUTER_PASSWORD"  # pragma: allowlist secret
 
     username = os.getenv(username_var)
     password = os.getenv(password_var)
@@ -65,13 +51,13 @@ def get_credentials(service: str, environment: str = "prod") -> tuple[str, str]:
 
     if missing_vars:
         error_msg = (
-            f"Missing or empty credentials for service '{service}' in environment '{environment}'. "
+            f"Missing or empty router credentials. "
             f"Please set the following environment variables: {', '.join(missing_vars)}"
         )
         logger.error(error_msg)
         raise MissingCredentialsError(error_msg, missing_vars)
 
-    logger.debug(f"Successfully retrieved credentials for {svc} in {env} environment")
+    logger.debug("Successfully retrieved router credentials")
     return username.strip(), password.strip()
 
 

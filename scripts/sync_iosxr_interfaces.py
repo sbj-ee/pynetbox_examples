@@ -178,7 +178,7 @@ def main():
     args = parser.parse_args()
 
     # Get credentials from environment variables
-    username, password = get_credentials("CISCO", args.env)
+    username, password = get_credentials()
     warnings.filterwarnings("ignore")
 
     # Configuration
